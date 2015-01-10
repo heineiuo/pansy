@@ -1,0 +1,387 @@
+<div class="home-api">
+
+
+
+  <div class="" id="apiNginx">
+      
+    <h3>nginx 配置</h3>
+    <pre class="code prettyprint lang-default-code">
+server {
+    listen       80;
+    server_name  purple.heineiuo.com;
+
+    location / {
+        root   purple;
+        index  index.html;
+        rewrite ^/(?!api)([a-zA-Z0-9-_/]*)$ /index.html last;
+    }
+    
+    location /api/ {
+      #省略
+    }
+
+}
+    </pre>
+
+  </div>
+
+
+  <div id="apiUseSrc">
+    
+    <h3 class="code">使用scrpit标签直接加载</h3>
+    <p>由于purple.js当前版本依赖jQuery，所以必须加载jQuery</p>
+
+    <h5>example</h5>
+    <p>index.html</p>
+
+    <pre class="code prettyprint lang-html">
+&lt;script src="http://static.heineiuo.com/jquery/2.0.3/jquery.min.js"&gt;&lt;/script&gt;
+&lt;script src="http://static.heineiuo.com/purple/0.3.3/purple.min.js"&gt;&lt;/script&gt;
+    </pre>
+
+  </div>
+
+
+
+  <div id="apiUseAMD">
+    
+    <h3 class="code">作为AMD模块加载</h3>
+    <p>由于purple.js当前版本依赖jQuery，所以必须加载jQuery</p>
+
+    <h5>example</h5>
+    <p>参考本站点（http://purple.heineiuo.com）的加载方式</p>
+
+    <pre class="code prettyprint lang-javascript">
+require.config({
+  baseUrl: config.buildpath,
+  paths: {
+    "jquery": [
+      "http://static.heineiuo.com/libs/jquery/2.0.3/jquery.min"
+    ],
+    "purple": [
+      "http://static.heineiuo.com/libs/purple/0.3.3/purple"
+    ],
+    "prettify": [
+      "http://static.heineiuo.com/libs/prettify/prettify"
+    ],
+    "main": [
+      "main"
+    ]
+  }
+})
+
+require(['jquery','purple','main'])
+    </pre>
+
+  </div>
+
+  <div id="apiInit">
+   
+    <h3 class="code">purple.init(config)</h3>
+
+    <p>purple必须先使用purple.init初始化，再使用</p>
+
+    <h5>参数</h5>
+    <ul>
+      <li>
+        <span><code>config</code></span>
+        <span><code>object</code></span>
+        <span></span>
+      </li>
+      <li>
+        <span><code>config.listenA</code></span>
+        <span><code>boolean</code></span>
+        <span></span>
+      </li>
+
+      <li>
+        <span><code>config.listenP</code></span>
+        <span><code>boolean</code></span>
+        <span></span>
+      </li>
+
+      <li>
+        <span><code>config.htmlpath</code></span>
+        <span><code>boolean</code></span>
+        <span></span>
+      </li>
+  
+    </ul>
+    
+
+
+    <h5>Example</h5>
+    <p>参考本站点的main.js</p>
+
+    <pre class="code prettyprint lang-javascript">
+purple.init({
+
+  debug: true,
+  scope: "http://purple.heineiuo.com",
+  apipath: "http://purple.heineiuo.com/api",
+  buildpath: "http://purple.heineiuo.com/b/3",
+  htmlpath: "http://purple.heineiuo.com/b/3/html",
+  titlesuffix: " | PURPLE.js",
+  client: {
+    "name": "",
+    "build": 3,
+    "version": "",
+    "code": ""
+  },
+  progressShow: true,
+  progressShow: false,
+  listenA: true,
+  listenP: true,
+  progressHandle: progressBar
+
+})
+</pre>
+
+  </div>
+  
+  <!-- END init -->
+
+  <!-- newMachine -->
+  <div id="apiMachine">
+    
+    <h3 class="code">purple.machine(object)</h3>
+
+    <p>生成一个状态机</p>
+    <p>状态机分为主状态机和分状态机</p>
+    
+    <h5>参数</h5>
+    <ul>
+      <li>
+        <span>machineName</span>
+        <span>String</span>
+        <span>必须</span>
+      </li>
+
+      <li>
+        <span>master</span>
+        <span></span>
+      </li>
+    </ul>
+
+
+    <h5>Example</h5>
+
+    <pre class="code prettyprint lang-javascript">
+// 主状态机
+purple.newMachine({
+  machine: 'main', // 状态机的名字
+  master: true
+})
+    </pre>
+
+  </div>
+  <!-- END newMachine -->
+
+  <!-- define -->
+  <div id="apiDefine">
+    
+    <h3 class="code">purple.define</h3>
+
+    <p>用于定义一个状态</p>
+
+
+    <h5>example</h5>
+
+    <pre class="code prettyprint lang-javascript">
+purple.define({
+  machine: "main",
+  name: /^\/document$/,
+  // name: ['document'],
+  jack: {
+    "main/main": {
+      "document/document": {}
+    }
+  },
+  events: [
+  ],
+  callback: function (argument) {
+
+    headertab('document')
+    purple.progress(100)
+
+  }
+})
+    </pre>
+
+  </div>
+  <!-- END define -->
+
+
+
+  <!-- router -->
+  <div id="apiRouter">
+    
+    <h3 class="code">purple.router</h3>
+
+    <p>路由器</p>
+
+
+    <h5>example</h5>
+
+    <pre class="code prettyprint lang-javascript">
+purple.router({
+  machine: "main",
+  href: "/faq?color=egg#show"
+})
+    </pre>
+
+  </div>
+  <!-- END router -->
+
+  <!-- progress -->
+  <div id="apiProgress">
+  
+    
+    <h3 class="code">purple.progress</h3>
+
+    <p>进度控制</p>
+    <p>输入不同的数字，使状态切换进度的值改变。</p>
+
+
+
+
+  </div>
+  <!-- END progress -->
+
+  <!-- on -->
+  <div id="apiOn">
+    
+    <h3 class="code">purple.on</h3>
+
+    <p>绑定事件</p>
+
+
+  </div>
+  <!-- END on -->
+
+
+
+  <!-- off -->
+
+  <div id="apiOff">
+    
+    <h3 class="code">purple.off</h3>
+
+    <p>解除绑定事件</p>
+
+  </div>
+
+  <!-- END off -->
+
+  <!-- html -->
+  <div id="apiHtml">
+    
+    <h3 class="code">purple.html</h3>
+
+    <p>获取html片段</p>
+
+
+  </div>
+
+  <!-- END html -->
+
+  <!-- add 
+
+  <div id="apiAdd">
+    
+    <h3>purple.add</h3>
+
+    <p>注册一个方法</p>
+
+    
+
+  </div>
+-->
+
+  <!-- END add -->
+
+  <!-- get 
+
+  <div id="apiGet">
+    
+    <h3>purple.get</h3>
+
+
+  </div>-->
+
+
+  <!-- END get -->
+
+  <!-- addEvent -->
+
+  <div id="apiAddEvent">
+    
+    <h3 class="code">purple.addEvent</h3>
+
+    <p>增加事件</p>
+
+  </div>
+
+
+  <!-- END addEvent -->
+
+  <!-- getEvent -->
+  <div id="apiGetEvent">
+    
+    <h3 class="code">purple.getEvent</h3>
+
+    <p>获取事件</p>
+
+  </div>
+
+  <!-- END getEvent -->
+
+  <!-- ajax -->
+  <div id="apiAjax">
+    
+    <h3>purple.ajax</h3>
+
+
+  </div>
+
+
+  <!-- END ajax -->
+
+
+  <!-- parseURL -->
+
+  <div id="apiParseURL">
+    
+    <h3 class="code">purple.parseURL</h3>
+
+    <p>解析URL</p>
+
+  </div>
+
+  <!-- END parseURL -->
+
+  <!-- getConfig -->
+  <div id="apiGetConfig">
+    
+    <h3 class="code">purple.getConfig</h3>
+
+
+  </div>
+
+  <!-- END getConfig -->
+
+
+  <!-- getConfig -->
+  <div id="apiDebug">
+    
+    <h3 class="code">purple.debug</h3>
+    
+    
+
+  </div>
+
+  <!-- END getConfig -->
+
+  
+
+</div>

@@ -1,0 +1,38 @@
+.header {
+  height: @header_height;
+  background-color: @purple;
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+}
+
+.header-wrap {
+  position: relative;
+  widows: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header-wrap .tabbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: @header_height;
+}
+
+.header-wrap .tabbar .tab {
+  display: block;
+  float: left;
+  padding: 0 16px;
+  line-height: @header_height;
+  color: #a193b0;
+  font-size: 17px;
+  text-decoration: none;
+  .ff-sans;
+}
+
+
+.header-wrap .tabbar .tab.open {
+  color: #fff;
+}

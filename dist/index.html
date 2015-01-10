@@ -1,0 +1,111 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><title>PURPLE.js</title><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body><script>var config = {
+    "debug": true,
+    "scope": "http://purple.heineiuo.com",
+    "apipath": "http://purple.heineiuo.com/api",
+    "buildpath": "http://purple.heineiuo.com/b/3",
+    "htmlpath": "http://purple.heineiuo.com/b/3/html",
+    "titlesuffix": " | PURPLE.js",
+    "client": {
+      "name": "",
+      "build": 3,
+      "version": "",
+      "code": ""
+    }
+  }</script><script>loadCSS(config.buildpath+"/main.min.css");
+  loadJS("http://static.heineiuo.com/libs/requirejs/2.1.14/require.min.js", function () {
+
+    require.config({
+      baseUrl: config.buildpath,
+      paths: {
+        "jquery": [
+          "http://static.heineiuo.com/libs/jquery/2.0.3/jquery.min"
+        ],
+        "purple": [
+          "http://static.heineiuo.com/libs/purple/0.3.3/purple"
+        ],
+        "prettify": [
+          "http://static.heineiuo.com/libs/prettify/prettify"
+        ],
+        "main": [
+          "main"
+        ]
+      }
+    })
+
+    require(['jquery','purple','main'])
+
+  })
+
+
+
+
+
+
+
+
+
+
+
+  function in_array (needle, haystack) {
+    function arrayCompare(a1, a2) {
+      if (a1.length != a2.length) return false;
+      var length = a2.length;
+      for (var i = 0; i < length; i++) {
+          if (a1[i] !== a2[i]) return false;
+      }
+      return true;
+  }
+
+    var length = haystack.length;
+    for(var i = 0; i < length; i++) {
+        if(typeof haystack[i] == 'object') {
+            if(arrayCompare(haystack[i], needle)) return true;
+        } else {
+            if(haystack[i] == needle) return true;
+        }
+    }
+    return false;
+
+  }
+
+
+  function loadCSS (href) {
+    var css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.type = "text/css";
+    css.href = href;
+
+
+    if ('undefined' == typeof window.csslinks) {
+      window.csslinks = []
+    };
+
+    if (!in_array(href, csslinks)) {
+      csslinks.push(css.href)
+      document.head.appendChild(css);
+    };
+
+  }
+
+  function loadJS (src, callback) {
+    var script = document.createElement("script")
+    var callback = callback || function () {}
+    script.type = "text/javascript"; 
+    script.src = src;
+    document.head.appendChild(script); 
+
+    if (script.readyState){
+      script.onreadystatechange = function(){
+      if (script.readyState == "loaded" ||  script.readyState == "complete"){ 
+          script.onreadystatechange = null; 
+          callback()
+        } 
+      }
+    } else {
+      script.onload = function(){
+        script.onload = null
+        callback()
+      }
+    } 
+
+  }</script></body></html>
