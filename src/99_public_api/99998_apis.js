@@ -71,6 +71,16 @@
       
     },
 
+    set: function (methodName, fn) {
+
+      if ('undefined' == typeof __purple.fn[methodName]) {
+        __purple.fn[methodName] = fn
+      } else {
+        // console.log('some method has been added');
+      }
+
+    },
+
     get: function (methodName) {
       return __purple.fn[methodName]
     },
@@ -91,7 +101,14 @@
 
     ajax: function (arguments) {
       ajax(arguments)
-    }
+    },
+
+
+    /********************/
+
+    setCookie: setCookie,
+    getCookie: getCookie,
+    removeCookie: removeCookie
 
 
   }

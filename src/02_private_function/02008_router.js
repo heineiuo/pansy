@@ -112,7 +112,7 @@ function routerHandle(arguments) {
         var routerCondition = isDefined(newState.routerCondition)?
           newState.routerCondition:machine.routerCondition
 
-        if (!routerCondition()) { // 不满足router条件
+        if (!routerCondition($transport)) { // 不满足router条件
           purple.progress(100)
           __purple.pending = false // 解除挂起状态
           return false
