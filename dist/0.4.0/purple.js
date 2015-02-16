@@ -1,5 +1,5 @@
 /**
- * purple.js v0.3.5 http://purple.heineiuo.com
+ * purple.js v0.4.0 http://purple.heineiuo.com
  * @author Hansel http://heineiuo.com
  * 
  * @require jQuery.js http://jquery.com/
@@ -11,144 +11,8 @@ function factory(window, $) {
 
 /**
  * private
- */  
+ */
 var __purple = {}
-
-/**
- * 初始化
- */
-function init(config){
-
-  /**
-   * 清除绑定的事件
-   * @param {__purple.eventLib}
-   * @param {__purple.eventLib.type} 触发方式，点击或者滑动
-   * @param {__purple.eventLib.target} dom对象
-   * @param {__purple.eventLib.target的值} 函数名
-   */
-  for(name in __purple.machineNames){
-    clearEvents(__purple.machines[name])
-  }
-
-  /**
-   * 清空__purple
-   */
-  __purple = {};
-
-  /**
-   * 重新定义__purple
-   */
-  __purple = {
-    timestamp: Date.now(),
-    htmlsuffix: config.htmlsuffix  || null,
-    htmlpath: config.htmlpath || '/html/',
-    debug: config.debug || false,
-    errorHandle: config.errorHandle || errorHandle,
-
-    ajaxErrorHandle: config.ajaxErrorHandle || ajaxErrorHandle,
-    ajaxFailHandle: config.ajaxFailHandle || ajaxFailHandle,
-    progressHandle: config.progressHandle || progressHandle,
-
-    progressShow: config.progressShow || false,
-    autoCallback: config.autoCallback || autoCallback,
-    listenA: config.listenA || false,
-    listenP: config.listenP || false,
-    pending: false,
-    error: false,   // if here is error
-    
-    ua: null,    //user agent
-
-    jack_id: 1,
-    jacks: {},
-    html: {},
-    prevURL: null,
-    eventArray: [], // global events
-    machineNames: [],
-    machines: {},
-    machineMaster: null,
-
-    events: {},
-    fn: {},
-
-    scope: new RegExp('^'+ (config.scope || location.origin)),
-
-
-    config: config
-
-  }
-
-  if ( __purple.debug ) {
-    purple.debug = debug
-  }
-
-  if (__purple.listenA) {
-    observerOn({
-      eventItem: [document,'click','a',eventClickA]
-    })
-  };
-
-  if ( __purple.listenP ) {
-    observerOn({
-      eventItem: [window,'popstate',eventPopsteate]
-    })
-  };
-
-
-}
-
-/**
- * cookie 操作
- */
-function setCookie(name,value,days) {//cookie名，值，时间
-  removeCookie(name)
-  var Days = days || 30 //此 cookie 将被保存 30 天
-  var expires  = new Date()    //new Date("December 31, 9998");
-  expires.setTime(expires.getTime() + Days*24*60*60*1000)
-  var path = '/'
-  document.cookie = name + "="+ escape(value) + ";expires=" + expires.toGMTString()+';path='+path
-}
-
-function getCookie(name) {
-  var arr = document.cookie.match(new RegExp("(^| )"+name+"=([^;]*)(;|$)"));
-  if(arr != null) return unescape(arr[2]); return null;
-}
-
-function removeCookie(name) {
-  var exp = new Date();
-  exp.setTime(exp.getTime() - 1);
-  var cval=getCookie(name);
-  if(cval!=null) document.cookie= name + "="+cval+";expires="+exp.toGMTString();
-}
-
-
-function isDefined(arg)   { return typeof arg != 'undefined' }
-function isUndefined(arg) { return typeof arg == 'undefined' }
-function isFunction(arg)  { return typeof arg == 'function'  }
-function isBoolean(arg)   { return typeof arg == 'boolean'   }
-function isString(arg)    { return typeof arg == 'string'    }
-function isNumber(arg)    { return /^\d+$/.test(arg)         }
-function isArray(arg)     { return arg instanceof Array      }
-function isRegExp(arg)    { return arg instanceof RegExp     }
-function isDate(arg)      { return arg instanceof Date       }
-function isObject(arg)    { return arg instanceof Object     }
-function isNull(arg)      { return arg === null || arg === ''}
-
-function isEmpty(obj) {
-  for (var name in obj) {
-    return false;
-  }
-  return true;
-}
-
-
-/**
- * 获取当前时间戳，计算毫秒数
- */
-function timestamp(arg) {
-  if ( isUndefined(arg) ) {var arg = 0};
-  return Date.now() - arg
-}
-
 
 /**
  * 获取对象长度
@@ -166,31 +30,6 @@ function objLength(obj) {
  */
 function in_array(needle, haystack) {
 
-  // simple=isDefined(simple)?simple:true;
-  // var s = String.fromCharCode(2);
-  // switch(simple){
-  //   case true:
-  //     var r = new RegExp(s+value+s);
-  //     return (r.test(s+array.join(s)+s));
-  //   case false:
-  //     var result = false;
-  //     var s = String.fromCharCode(2);
-  //     for (var i = 0; i < array.length; i++) {
-  //       if (value.join(s) == array[i].join(s)) {
-  //         result = true
-  //       }
-  //     };
-  //     return result;
-  // }
-
-  function arrayCompare(a1, a2) {
-      if (a1.length != a2.length) return false;
-      var length = a2.length;
-      for (var i = 0; i < length; i++) {
-          if (a1[i] !== a2[i]) return false;
-      }
-      return true;
-  }
 
     var length = haystack.length;
     for(var i = 0; i < length; i++) {
@@ -213,7 +52,6 @@ function arrayCompare(a1, a2) {
   }
   return true;
 }
-
 
 
 /**
@@ -299,7 +137,6 @@ function obj2arr(obj) {
 /**
  * 获取对象中的元素，并保存为数组
  */
-
 function objElements (obj) {
   var result = [];
 
@@ -321,9 +158,26 @@ function objElements (obj) {
 
 
 /**
+ * @param {__purple.eventLib} 
+ * @param {__purple.eventLib.type} 触发方式，点击或者滑动
+ * @param {__purple.eventLib.target} dom对象
+ * @param {__purple.eventLib.target的值} 函数名
+ */
+function clearEvents(machine) {
+  for (var i = 0; i < machine.eventArray.length; i++) {
+    var a = machine.eventArray[i];
+    $(a[0]).off(a[1],a[2],a[3])
+  }
+  
+  machine.eventArray = [] // 清空事件集
+}
+
+
+
+
+/**
  * 在父级元素中查找标签
  */
-
 function getParentByTag(dom, nodename) {
   if (dom.nodeName == 'BODY') {
     return false;
@@ -343,6 +197,7 @@ function getParentByTag(dom, nodename) {
     return dom.parentNode || dom.parentElement
   }
 }
+
 
   
 /**
@@ -386,20 +241,20 @@ function getRouter(dom) {
 }
 
 
-/**
- * @param {__purple.eventLib} 
- * @param {__purple.eventLib.type} 触发方式，点击或者滑动
- * @param {__purple.eventLib.target} dom对象
- * @param {__purple.eventLib.target的值} 函数名
- */
-function clearEvents(machine) {
-  for (var i = 0; i < machine.eventArray.length; i++) {
-    var a = machine.eventArray[i];
-    $(a[0]).off(a[1],a[2],a[3])
-  }
-  
-  machine.eventArray = [] // 清空事件集
-}
+function isDefined(arg)   { return typeof arg != 'undefined' }
+function isUndefined(arg) { return typeof arg == 'undefined' }
+function isFunction(arg)  { return typeof arg == 'function'  }
+function isBoolean(arg)   { return typeof arg == 'boolean'   }
+function isString(arg)    { return typeof arg == 'string'    }
+function isNumber(arg)    { return /^\d+$/.test(arg)         }
+function isArray(arg)     { return arg instanceof Array      }
+function isRegExp(arg)    { return arg instanceof RegExp     }
+function isDate(arg)      { return arg instanceof Date       }
+function isObject(arg)    { return arg instanceof Object     }
+function isNull(arg)      { return arg === null || arg === ''}
+function isEmpty(obj)     { for (var name in obj) { return false;} return true;}
+
+
 
 
 
@@ -414,7 +269,6 @@ function clearEvents(machine) {
 
  search即从origin后的第一个?开始，到第一个#号之前
  hash从第一个#开始，一直到结束
-
 
  所以先判断hash，将href中的hash成分去除
  再判断search，只要看看还有没有?号即可
@@ -510,6 +364,513 @@ function parseURL(url) {
 
   return result
 }
+
+/**
+ * ajax控制中心
+ * @author @smilevcard
+ * 2014-03-29 16:57:38
+ * 
+ * 借助于jQuery的ajax模块
+ *
+ */
+function ajax(argument) {
+
+  var url = argument.url || __purple.apipath
+  var callback = argument.callback || function () {}
+  var data = argument.data || {}
+  var type = argument.type || 'POST'
+  var dataType = argument.dataType || 'json'
+
+  $.ajax({
+    url: url,
+    type: type,
+    dataType: dataType,
+    data: data,
+  })
+  .done(function (data) {
+    if(__purple.debug){
+      console.log(data)
+    }
+
+    if ('undefined' == typeof data.error) {
+      callback(data)
+    } else {
+      if ('undefined' != typeof argument.error) {
+        argument.error(data, function (err) {
+          if (err) {
+            __purple.ajaxErrorHandle(data)
+          }
+        })
+      } else {
+        __purple.ajaxErrorHandle(data)
+      }
+    }
+  })
+  .fail(function (jqXHR) {
+
+    if ('undefined' != typeof argument.fail) {
+      argument.fail(data, function (err) {
+        if (err) {
+          __purple.ajaxFailHandle(data)
+        }
+      })
+    } else {
+      __purple.ajaxFailHandle(data)
+    }
+
+  })
+
+}
+
+/**
+ * ajax 返回Error处理
+ */
+function ajaxErrorHandle(data) {
+  if (__purple.debug) {
+    console.log(data)
+  };
+
+}
+
+/**
+ * ajax 服务器无响应处理
+ */
+function ajaxFailHandle(jqXHR) {
+  if (__purple.debug) {
+    console.log(jqXHR)
+  };
+
+}
+
+
+
+/**
+ * @private 组装器
+ * @author @heineiuo
+ * 2014-03-29 22:53:20
+ *
+ * 根据传入的实际路径和请求参数
+ * 调取TaskLib中对应的lib数据，创建build
+ */
+function build (arguments, callback) {
+
+  var machineName = arguments.machine
+  var machine = __purple.machines[machineName]
+  var stateName = arguments.stateName
+  var newState = machine.states[stateName]; // 新task对象
+  var machineDOM = document.getElementById('state'+machineName)
+  if (machineDOM == null) {
+    machineDOM = document.createElement('div')
+    machineDOM.id = 'state'+machineName
+    document.body.appendChild(machineDOM)
+  };
+
+
+  /**
+   * 该machine是否router过，1代表第一次，2代表router过
+   */
+  if ( !isNull(machine.stateNow) ) { // 存在旧task的情况，需要比对旧task的jack信息
+
+    var nowState = machine.states[machine.stateNow]; // 旧task对象
+    nowState.jackarr = obj2arr(nowState.jack)
+
+    /**
+     * 解除旧对象的事件绑定
+     * 防止受上一个task的影响
+     */
+    clearEvents(machine)
+
+    /**
+     * 检查上一个task里面有没有可以“保留”的jack
+     * （不能被保留的，隐藏掉）
+     */
+    for (var i = 0; i < nowState.jackarr.length; i++) {
+      if ( !in_array(nowState.jackarr[i], newState.jackarr) ) {
+        /**
+         * 旧的不存在新的里面，剔除（清空并重设jack）
+         */
+        hideJack(nowState.jackarr[i])
+
+      }
+    }
+
+    /**
+     * 检查dom树，有没有可以“复活”的jack
+     * 如果
+     */
+    for (var i = 0; i < newState.jackarr.length; i++) {
+
+      if (newState.jackReady) {
+
+        showJack(newState.jackarr[i])
+
+      } else if ( in_array( newState.jackarr[i], nowState.jackarr) ) { // dom里面有，直接显示
+
+        showJack(newState.jackarr[i])
+
+      } else { //dom里面没有该jack，需要加载
+
+        buildJack(newState.jackarr[i])
+      }
+
+
+
+    }
+
+  } else {// 没router过
+
+    /**
+     * 不需要检查，直接遍历加载
+     */
+    for (var i = 0; i < newState.jackarr.length; i++) {
+        buildJack(newState.jackarr[i])
+    }
+
+  }
+
+  purple.progress(40)
+
+  // 更新state
+  machine.statePrev = machine.stateNow // 将当前的task移入旧task
+  machine.stateNow  = stateName // 将当前的task名更新
+
+  // 绑定事件
+  for (var i = 0; i < newState.events.length; i++) {
+    observerOn({
+      machine: machineName,
+      eventItem: newState.events[i]
+    })
+  }
+
+  // 回调
+  callback()
+
+
+
+
+  /**
+   * 组装html/jack
+   * @heineiuo
+   * 2014-03-31 21:24:43
+   */
+  function buildJack(jacktree) { // jacktree 是数组
+
+    if ('undefined' != typeof __purple.jacks[jacktree[jacktree.length-1]]['loaded']) {
+      showJack(jacktree)
+    } else {
+
+      var newjack  = getJack(jacktree[jacktree.length-1])
+      var newjack2 =    jack(jacktree[jacktree.length-1])
+
+      if (newjack == null) { // 当前dom中没有标注jack位置，自动计算位置
+
+        var parentJack = (jacktree.length == 1)?machineDOM:getJack(jacktree[jacktree.length-2])
+        $(parentJack).append(newjack2)
+
+      } else {
+
+        $(newjack).after(newjack2)
+        $(newjack).remove()
+
+      }
+    }
+
+
+    __purple.jacks[jacktree[jacktree.length-1]]['loaded'] = true
+
+  }
+
+
+  /**
+   * 隐藏jack
+   */
+  function hideJack(jacktree){
+    getJack(jacktree[jacktree.length-1]).style.display = 'none'
+  }
+
+  /**
+   * 显示jack
+   */
+
+  function showJack(jacktree){
+    getJack(jacktree[jacktree.length-1]).style.display = 'block'
+  }
+
+  /**
+   * getJack
+   */
+  function getJack (jack) {
+    return document.getElementById(__purple.jacks[jack]['id'])
+  }
+
+
+
+
+
+
+} // End of ling.
+
+
+
+/**
+ * cookie 操作
+ */
+function setCookie(name,value,days) {//cookie名，值，时间
+  removeCookie(name)
+  var Days = days || 30 //此 cookie 将被保存 30 天
+  var expires  = new Date()    //new Date("December 31, 9998");
+  expires.setTime(expires.getTime() + Days*24*60*60*1000)
+  var path = '/'
+  document.cookie = name + "="+ escape(value) + ";expires=" + expires.toGMTString()+';path='+path
+}
+
+function getCookie(name) {
+  var arr = document.cookie.match(new RegExp("(^| )"+name+"=([^;]*)(;|$)"));
+  if(arr != null) return unescape(arr[2]); return null;
+}
+
+function removeCookie(name) {
+  var exp = new Date();
+  exp.setTime(exp.getTime() - 1);
+  var cval=getCookie(name);
+  if(cval!=null) document.cookie= name + "="+cval+";expires="+exp.toGMTString();
+}
+
+/**
+ * @public 进入调试模式
+ */
+
+
+
+function debug(name, v){
+
+  if (typeof name == 'undefined') {
+    console.log(__purple)
+  }
+  
+}
+
+function errorHandle(errorCode,errorMsg) {
+  if ( __purple.debug ) {
+    
+    var errorCode = errorCode || ''
+    var errorMsg = errorMsg || ''
+    console.error(errorCode+': '+errorMsg)
+  };
+}
+
+/**
+ * 显示加载进度
+ */
+function progressHandle(percent) {
+    
+    var percent = Number(percent) || 0;
+    percent = percent>100?100:percent;
+    percent = percent<0?0:percent;
+
+    switch(percent){
+      case 100:
+        a(100);
+        setTimeout(b,500)
+        break;
+      default:
+        a(percent);
+        break;
+    }
+
+    function a(percent){
+      if (!$('#npop').length) {
+        $('body').append($('<div id="npop"><style>#npop{z-index:1000000;position:fixed;top:0;right:0;left:0;height:4px}#npop .power{position:absolute;top:0;bottom:0;left:0;background-color:rgb(85,185,215);transition:all .5s ease}</style><div class="power"></div></div>'))
+      };
+      $('#npop .power').css({width:percent+'%'})
+    }
+
+    function b(){
+      $('#npop').remove()
+    }
+
+
+}
+
+
+function autoCallback(){
+  
+}
+
+
+function loadLang(arguments) {
+  __purple.lang = arguments
+}
+
+
+/**
+ * @public 定义task
+ * @author @heineiuo
+ * 2014-03-29 22:51:03
+ *
+ * Define 定义一个task，或者说一个router
+ * 定义完其实只是存储了这个router的信息
+ * 当请求到这个router的时候，再使用Build来创建dom
+ */
+
+function define(arguments) {
+
+  if (isUndefined(__purple.machines[arguments.machine])) {
+    return false
+  };
+
+// 第一个参数生成正则化的task名;
+// 第二个参数根据提一个参数获取url中的request值（可以有多个）;
+// 从'#npo'的下一层开始识别和加载html
+// 按层名区别不同的任务，
+
+  /**
+   * 如果'#npo'下面没有'content'，则新建一个'content';
+   * 如果'content'底下有'[data-jack="content/action"]',
+   * 在该jack后增加对应的html片段作为新的jack,
+   * 同时新jack增加属性'[data-jack="content/action"]',
+   * 并将旧jack删除, 保证一个dom里不会出现重复的jack;
+   * 
+   * 如果没有，则直接在'content'末尾增加;
+   */
+  var machineName = arguments.machine
+  var name        = arguments.name
+  var stateName   = name instanceof RegExp ? name : new RegExp('^\\\/'+name.join('\\\/')+'$')
+  var jack     = arguments.jack || {}
+  var events   = arguments.events   || []
+  var callback = arguments.callback || function(){return true}
+  var jackarr  = obj2arr(jack)
+  var jacks    = objElements(jack)
+
+  /**
+   * 将jack格式化
+   */
+  for (var i = 0; i < jacks.length; i++) {
+    if ('undefined' == typeof __purple.jacks[jacks[i]]) {
+      __purple.jack_id ++
+      __purple.jacks[jacks[i]] = {
+        id: 'ppjack' + String(__purple.jack_id),
+        ready: false
+      }
+    }
+  }
+
+  // if ( !name.length ) {
+  //   errorHandle('BUILD_ERROR_NOREGNAME')
+  //   return false;
+  // };
+
+  /**
+   * 存储在TaskLib对象内，根据taskname取出
+   * task名是正则表达化后的router
+   */
+
+   var a = __purple.machines[machineName]
+   a.stateNames.push(stateName)
+
+   var b = {
+    name     : name,
+    jack     : jack,
+    jackarr  : jackarr,
+    events   : events,
+    callback : callback,
+    url      : null,
+    jackReady: false
+  }
+
+  if (isDefined(arguments.needCondition)) {
+    b.needCondition = arguments.needCondition
+  } else {
+    b.needCondition = a.needCondition
+  }
+
+  if (isDefined(arguments.routerCondition)) {
+    b.needCondition = true
+    b.routerCondition = arguments.routerCondition
+  };
+
+  __purple.machines[machineName].states[stateName] = b
+
+
+} // Define end
+
+/**
+ * 绑定a标签点击事件
+ */
+
+function eventClickA(event) {
+
+    /**
+     * 获取目标dom
+     */
+    var $a = $(event.target).closest('a');
+
+    /**
+     * 如果是打开新标签，不处理
+     */
+
+    var href = $a.attr('href') || 0
+    var target = $a.attr('target') || 0
+
+    if (href != 0 && target==0) {
+
+      var transport = parseURL(href)
+
+      if (__purple.scope.test(transport.href)) {
+
+        var machine = getRouter($a[0]);
+
+        /**
+         * 如果没有控制器，不处理（比如打算搞的spinner）
+         */
+        if ( machine != false ) {
+
+          if ( event && event.preventDefault ) {
+            event.preventDefault();
+          } else {
+            window.event.returnValue = false;
+          }
+
+          routerHandle({
+            machine: machine,
+            transport: transport,
+            type: 'push',
+            clearCache: false
+          })
+
+        }
+        
+      };
+
+    };
+
+
+
+}
+
+
+
+// /** 
+//  * 监听url改变事件  window.onpopstate
+//  */
+
+function eventPopsteate(){
+
+  var transport = parseURL(location.href)
+  if (__purple.scope.test(transport.href)) {
+
+    routerHandle({
+      machine: __purple.machineMaster,
+      transport: transport,
+      type:'replace',
+      clearCache: false
+    })
+  
+  }
+
+}
+
+
 /**
  * @public html加载器
  * 根据jackname获取html片段
@@ -626,6 +987,87 @@ function jack(jackname, frag) {
 }
 
 /**
+ * 初始化
+ */
+function init(config){
+
+  /**
+   * 清除绑定的事件
+   * @param {__purple.eventLib}
+   * @param {__purple.eventLib.type} 触发方式，点击或者滑动
+   * @param {__purple.eventLib.target} dom对象
+   * @param {__purple.eventLib.target的值} 函数名
+   */
+  for(name in __purple.machineNames){
+    clearEvents(__purple.machines[name])
+  }
+
+  /**
+   * 清空__purple
+   */
+  __purple = {};
+
+  /**
+   * 重新定义__purple
+   */
+  __purple = {
+    timestamp: Date.now(),
+    htmlsuffix: config.htmlsuffix  || null,
+    htmlpath: config.htmlpath || '/html/',
+    debug: config.debug || false,
+    errorHandle: config.errorHandle || errorHandle,
+
+    ajaxErrorHandle: config.ajaxErrorHandle || ajaxErrorHandle,
+    ajaxFailHandle: config.ajaxFailHandle || ajaxFailHandle,
+    progressHandle: config.progressHandle || progressHandle,
+
+    progressShow: config.progressShow || false,
+    autoCallback: config.autoCallback || autoCallback,
+    listenA: config.listenA || false,
+    listenP: config.listenP || false,
+    pending: false,
+    error: false,   // if here is error
+    
+    ua: null,    //user agent
+
+    jack_id: 1,
+    jacks: {},
+    html: {},
+    prevURL: null,
+    eventArray: [], // global events
+    machineNames: [],
+    machines: {},
+    machineMaster: null,
+
+    events: {},
+    fn: {},
+
+    scope: new RegExp('^'+ (config.scope || location.origin)),
+
+
+    config: config
+
+  }
+
+  if ( __purple.debug ) {
+    purple.debug = debug
+  }
+
+  if (__purple.listenA) {
+    observerOn({
+      eventItem: [document,'click','a',eventClickA]
+    })
+  };
+
+  if ( __purple.listenP ) {
+    observerOn({
+      eventItem: [window,'popstate',eventPopsteate]
+    })
+  };
+
+
+}
+/**
  * 新建Machine
  * 2014-07-05 08:00:26
  */
@@ -665,95 +1107,48 @@ function newMachine(arguments) {
 
 }
 /**
- * @public 定义task
- * @author @heineiuo
- * 2014-03-29 22:51:03
- *
- * Define 定义一个task，或者说一个router
- * 定义完其实只是存储了这个router的信息
- * 当请求到这个router的时候，再使用Build来创建dom
+ * @public 监听器
+ * 
  */
+function observerOn(arguments) {
+  var eventItem = arguments.eventItem;
+  var eventArray = ('undefined' != typeof arguments.machine)?
+    __purple.machines[arguments.machine].eventArray:__purple.eventArray
 
-function define(arguments) {
-
-  if (isUndefined(__purple.machines[arguments.machine])) {
-    return false
-  };
-
-// 第一个参数生成正则化的task名;
-// 第二个参数根据提一个参数获取url中的request值（可以有多个）;
-// 从'#npo'的下一层开始识别和加载html
-// 按层名区别不同的任务，
-
-  /**
-   * 如果'#npo'下面没有'content'，则新建一个'content';
-   * 如果'content'底下有'[data-jack="content/action"]',
-   * 在该jack后增加对应的html片段作为新的jack,
-   * 同时新jack增加属性'[data-jack="content/action"]',
-   * 并将旧jack删除, 保证一个dom里不会出现重复的jack;
-   * 
-   * 如果没有，则直接在'content'末尾增加;
-   */
-  var machineName = arguments.machine
-  var name        = arguments.name
-  var stateName   = name instanceof RegExp ? name : new RegExp('^\\\/'+name.join('\\\/')+'$')
-  var jack     = arguments.jack || {}
-  var events   = arguments.events   || []
-  var callback = arguments.callback || function(){return true}
-  var jackarr  = obj2arr(jack)
-  var jacks    = objElements(jack)
-
-  /**
-   * 将jack格式化
-   */
-  for (var i = 0; i < jacks.length; i++) {
-    if ('undefined' == typeof __purple.jacks[jacks[i]]) {
-      __purple.jack_id ++
-      __purple.jacks[jacks[i]] = {
-        id: 'ppjack' + String(__purple.jack_id),
-        ready: false
-      }
+  if ( !in_array(eventItem, eventArray) ) {
+    eventArray.push(eventItem);
+    switch(eventItem.length){
+      case 3:
+        // container,type,handle
+        $(eventItem[0]).on(eventItem[1],eventItem[2])
+        break;
+      case 4:
+        // container,type,target,handle
+        $(eventItem[0]).on(eventItem[1],eventItem[2],eventItem[3]);
+        break;
     }
   }
+}
 
-  // if ( !name.length ) {
-  //   errorHandle('BUILD_ERROR_NOREGNAME')
-  //   return false;
-  // };
+function observerOff(arguments) {
+  var eventItem = arguments.eventItem;
+  var eventArray = ('undefined' != typeof arguments.machine)?
+    __purple.machines[arguments.machine].eventArray:__purple.eventArray
 
-  /**
-   * 存储在TaskLib对象内，根据taskname取出
-   * task名是正则表达化后的router
-   */
-
-   var a = __purple.machines[machineName]
-   a.stateNames.push(stateName)
-
-   var b = {
-    name     : name,
-    jack     : jack,
-    jackarr  : jackarr,
-    events   : events,
-    callback : callback,
-    url      : null,
-    jackReady: false
+  if ( in_array(eventItem, eventArray) ) {
+    switch(eventItem.length){
+      case 3:
+        // container,type,handle
+        $(eventItem[0]).off(eventItem[1],eventItem[2])
+        break;
+      case 4:
+        // container,type,target,handle
+        $(eventItem[0]).off(eventItem[1],eventItem[2],eventItem[3]);
+        break;
+    }
+    eventArray = deleteArr(eventArray, eventItem)
   }
-
-  if (isDefined(arguments.needCondition)) {
-    b.needCondition = arguments.needCondition
-  } else {
-    b.needCondition = a.needCondition
-  }
-
-  if (isDefined(arguments.routerCondition)) {
-    b.needCondition = true
-    b.routerCondition = arguments.routerCondition
-  };
-
-  __purple.machines[machineName].states[stateName] = b
-
-
-} // Define end
+}
 /**
  * @public 路由器
  * @author @heineiuo
@@ -975,441 +1370,6 @@ function routerHandle(arguments) {
 
 
 
-/**
- * @private 组装器
- * @author @heineiuo
- * 2014-03-29 22:53:20
- *
- * 根据传入的实际路径和请求参数
- * 调取TaskLib中对应的lib数据，创建build
- */
-function build (arguments, callback) {
-
-  var machineName = arguments.machine
-  var machine = __purple.machines[machineName]
-  var stateName = arguments.stateName
-  var newState = machine.states[stateName]; // 新task对象
-  var machineDOM = document.getElementById('state'+machineName)
-  if (machineDOM == null) {
-    machineDOM = document.createElement('div')
-    machineDOM.id = 'state'+machineName
-    document.body.appendChild(machineDOM)
-  };
-
-
-  /**
-   * 该machine是否router过，1代表第一次，2代表router过
-   */
-  if ( !isNull(machine.stateNow) ) { // 存在旧task的情况，需要比对旧task的jack信息
-
-    var nowState = machine.states[machine.stateNow]; // 旧task对象
-    nowState.jackarr = obj2arr(nowState.jack)
-
-    /**
-     * 解除旧对象的事件绑定
-     * 防止受上一个task的影响
-     */
-    clearEvents(machine)
-
-    /**
-     * 检查上一个task里面有没有可以“保留”的jack
-     * （不能被保留的，隐藏掉）
-     */
-    for (var i = 0; i < nowState.jackarr.length; i++) {
-      if ( !in_array(nowState.jackarr[i], newState.jackarr) ) {
-        /**
-         * 旧的不存在新的里面，剔除（清空并重设jack）
-         */
-        hideJack(nowState.jackarr[i])
-
-      }
-    }
-
-    /**
-     * 检查dom树，有没有可以“复活”的jack
-     * 如果
-     */
-    for (var i = 0; i < newState.jackarr.length; i++) {
-
-      if (newState.jackReady) {
-
-        showJack(newState.jackarr[i])
-
-      } else if ( in_array( newState.jackarr[i], nowState.jackarr) ) { // dom里面有，直接显示
-
-        showJack(newState.jackarr[i])
-
-      } else { //dom里面没有该jack，需要加载
-
-        buildJack(newState.jackarr[i])
-      }
-
-
-
-    }
-
-  } else {// 没router过
-
-    /**
-     * 不需要检查，直接遍历加载
-     */
-    for (var i = 0; i < newState.jackarr.length; i++) {
-        buildJack(newState.jackarr[i])
-    }
-
-  }
-
-  purple.progress(40)
-
-  // 更新state
-  machine.statePrev = machine.stateNow // 将当前的task移入旧task
-  machine.stateNow  = stateName // 将当前的task名更新
-
-  // 绑定事件
-  for (var i = 0; i < newState.events.length; i++) {
-    observerOn({
-      machine: machineName,
-      eventItem: newState.events[i]
-    })
-  }
-
-  // 回调
-  callback()
-
-
-
-
-  /**
-   * 组装html/jack
-   * @heineiuo
-   * 2014-03-31 21:24:43
-   */
-  function buildJack(jacktree) { // jacktree 是数组
-
-    if ('undefined' != typeof __purple.jacks[jacktree[jacktree.length-1]]['loaded']) {
-      showJack(jacktree)
-    } else {
-
-      var newjack  = getJack(jacktree[jacktree.length-1])
-      var newjack2 =    jack(jacktree[jacktree.length-1])
-
-      if (newjack == null) { // 当前dom中没有标注jack位置，自动计算位置
-
-        var parentJack = (jacktree.length == 1)?machineDOM:getJack(jacktree[jacktree.length-2])
-        $(parentJack).append(newjack2)
-
-      } else {
-
-        $(newjack).after(newjack2)
-        $(newjack).remove()
-
-      }
-    }
-
-
-    __purple.jacks[jacktree[jacktree.length-1]]['loaded'] = true
-
-  }
-
-
-  /**
-   * 隐藏jack
-   */
-  function hideJack(jacktree){
-    getJack(jacktree[jacktree.length-1]).style.display = 'none'
-  }
-
-  /**
-   * 显示jack
-   */
-
-  function showJack(jacktree){
-    getJack(jacktree[jacktree.length-1]).style.display = 'block'
-  }
-
-  /**
-   * getJack
-   */
-  function getJack (jack) {
-    return document.getElementById(__purple.jacks[jack]['id'])
-  }
-
-
-
-
-
-
-} // End of ling.
-
-
-/**
- * @public 进入调试模式
- */
-
-
-
-function debug(name, v){
-
-  if (typeof name == 'undefined') {
-    console.log(__purple)
-  }
-  
-}
-
-function errorHandle(errorCode,errorMsg) {
-  if ( __purple.debug ) {
-    
-    var errorCode = errorCode || ''
-    var errorMsg = errorMsg || ''
-    console.error(errorCode+': '+errorMsg)
-  };
-}
-
-/**
- * 显示加载进度
- */
-function progressHandle(percent) {
-    
-    var percent = Number(percent) || 0;
-    percent = percent>100?100:percent;
-    percent = percent<0?0:percent;
-
-    switch(percent){
-      case 100:
-        a(100);
-        setTimeout(b,500)
-        break;
-      default:
-        a(percent);
-        break;
-    }
-
-    function a(percent){
-      if (!$('#npop').length) {
-        $('body').append($('<div id="npop"><style>#npop{z-index:1000000;position:fixed;top:0;right:0;left:0;height:4px}#npop .power{position:absolute;top:0;bottom:0;left:0;background-color:rgb(85,185,215);transition:all .5s ease}</style><div class="power"></div></div>'))
-      };
-      $('#npop .power').css({width:percent+'%'})
-    }
-
-    function b(){
-      $('#npop').remove()
-    }
-
-
-}
-
-
-function autoCallback(){
-  
-}
-
-
-function loadLang(arguments) {
-  __purple.lang = arguments
-}
-
-
-/**
- * @public 监听器
- * 
- */
-function observerOn(arguments) {
-  var eventItem = arguments.eventItem;
-  var eventArray = ('undefined' != typeof arguments.machine)?
-    __purple.machines[arguments.machine].eventArray:__purple.eventArray
-
-  if ( !in_array(eventItem, eventArray) ) {
-    eventArray.push(eventItem);
-    switch(eventItem.length){
-      case 3:
-        // container,type,handle
-        $(eventItem[0]).on(eventItem[1],eventItem[2])
-        break;
-      case 4:
-        // container,type,target,handle
-        $(eventItem[0]).on(eventItem[1],eventItem[2],eventItem[3]);
-        break;
-    }
-  }
-}
-
-function observerOff(arguments) {
-  var eventItem = arguments.eventItem;
-  var eventArray = ('undefined' != typeof arguments.machine)?
-    __purple.machines[arguments.machine].eventArray:__purple.eventArray
-
-  if ( in_array(eventItem, eventArray) ) {
-    switch(eventItem.length){
-      case 3:
-        // container,type,handle
-        $(eventItem[0]).off(eventItem[1],eventItem[2])
-        break;
-      case 4:
-        // container,type,target,handle
-        $(eventItem[0]).off(eventItem[1],eventItem[2],eventItem[3]);
-        break;
-    }
-    eventArray = deleteArr(eventArray, eventItem)
-  }
-}
-
-/**
- * 绑定a标签点击事件
- */
-
-function eventClickA(event) {
-
-    /**
-     * 获取目标dom
-     */
-    var $a = $(event.target).closest('a');
-
-    /**
-     * 如果是打开新标签，不处理
-     */
-
-    var href = $a.attr('href') || 0
-    var target = $a.attr('target') || 0
-
-    if (href != 0 && target==0) {
-
-      var transport = parseURL(href)
-
-      if (__purple.scope.test(transport.href)) {
-
-        var machine = getRouter($a[0]);
-
-        /**
-         * 如果没有控制器，不处理（比如打算搞的spinner）
-         */
-        if ( machine != false ) {
-
-          if ( event && event.preventDefault ) {
-            event.preventDefault();
-          } else {
-            window.event.returnValue = false;
-          }
-
-          routerHandle({
-            machine: machine,
-            transport: transport,
-            type: 'push',
-            clearCache: false
-          })
-
-        }
-        
-      };
-
-    };
-
-
-
-}
-
-
-
-// /** 
-//  * 监听url改变事件  window.onpopstate
-//  */
-
-function eventPopsteate(){
-
-  var transport = parseURL(location.href)
-  if (__purple.scope.test(transport.href)) {
-
-    routerHandle({
-      machine: __purple.machineMaster,
-      transport: transport,
-      type:'replace',
-      clearCache: false
-    })
-  
-  }
-
-}
-
-
-
-/**
- * ajax控制中心
- * @author @smilevcard
- * 2014-03-29 16:57:38
- * 
- * 借助于jQuery的ajax模块
- *
- */
-function ajax(argument) {
-
-  var url = argument.url || __purple.apipath
-  var callback = argument.callback || function () {}
-  var data = argument.data || {}
-  var type = argument.type || 'POST'
-  var dataType = argument.dataType || 'json'
-
-  $.ajax({
-    url: url,
-    type: type,
-    dataType: dataType,
-    data: data,
-  })
-  .done(function (data) {
-    if(__purple.debug){
-      console.log(data)
-    }
-
-    if ('undefined' == typeof data.error) {
-      callback(data)
-    } else {
-      if ('undefined' != typeof argument.error) {
-        argument.error(data, function (err) {
-          if (err) {
-            __purple.ajaxErrorHandle(data)
-          }
-        })
-      } else {
-        __purple.ajaxErrorHandle(data)
-      }
-    }
-  })
-  .fail(function (jqXHR) {
-
-    if ('undefined' != typeof argument.fail) {
-      argument.fail(data, function (err) {
-        if (err) {
-          __purple.ajaxFailHandle(data)
-        }
-      })
-    } else {
-      __purple.ajaxFailHandle(data)
-    }
-
-  })
-
-}
-
-/**
- * ajax 返回Error处理
- */
-function ajaxErrorHandle(data) {
-  if (__purple.debug) {
-    console.log(data)
-  };
-
-}
-
-/**
- * ajax 服务器无响应处理
- */
-function ajaxFailHandle(jqXHR) {
-  if (__purple.debug) {
-    console.log(jqXHR)
-  };
-
-}
-
-
-
 
   var purple = window.purple = {
 
@@ -1528,6 +1488,10 @@ function ajaxFailHandle(jqXHR) {
   
 
 } // END factory
+
+
+
+
 
   if ( typeof define === "function" && define.amd ) {
     
