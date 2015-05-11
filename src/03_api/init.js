@@ -50,13 +50,9 @@ function init(config){
     machineNames: [],
     machines: {},
     machineMaster: null,
-
     events: {},
     fn: {},
-
     scope: new RegExp('^'+ (config.scope || location.origin)),
-
-
     config: config
 
   }
@@ -65,7 +61,7 @@ function init(config){
     purple.debug = debug
   }
 
-  if (__purple.listenA) {
+  if ( __purple.listenA ) {
     observerOn({
       eventItem: [document,'click','a',eventClickA]
     })

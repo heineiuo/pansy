@@ -4,5 +4,7 @@
 node_modules
 snapshot
 .DS_Store
+.idea
 Thumb.db
 archive
+npm-debug.log

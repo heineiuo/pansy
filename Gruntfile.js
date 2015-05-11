@@ -1,85 +1,86 @@
 'use strict';
+
 module.exports = function(grunt) {
 
+    grunt.initConfig({
+        pkg: grunt.file.readJSON('package.json'),
 
-  var pkg = grunt.file.readJSON('package.json')
-  var name = pkg.name
-  var version = pkg.version
-  var dir = {}
-      dir.src  = 'src'
-      dir.dist = 'dist'
+        concat: {
+            js: {
+                options: {
+                    separator: ';'
+                },
+                files: {
+                    'dist/js/red.js': [
+                        "head.js",
+                        "route.js",
+                        "foot.js"
+                    ]
+                }
+            },
 
-  var purpleJSBanner = '/**\n'+
-  ' * '+name+' v'+version+ ' http://purple.heineiuo.com\n'+
-  ' * @author Hansel http://heineiuo.com\n'+
-  ' */\n'
+            less: {
+                files: {
+                    'tmp/red.less': [
+                        'less/reset.less',
+                        'less/phone-l.less',
+                        'less/layout.less',
+                        'less/layout-sm.less',
+                        'less/layout-md.less',
+                        'less/layout-lg.less',
+                        'less/elements/btn.less'
+                    ]
+                },
+            }
+        },
 
-  grunt.initConfig({
-
-    concat: {
-      options: {
-        separator: '\n',
-      },
-      static_mappings: {
-        files: [
-          {src: [ dir.src+"/**/*.js" ], dest: dir.dist+'/'+version+'/purple.js'},
-        ],
-      },
-    },
+        uglify: {
+            options: {
+                banner: '/*! RED.js <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+            },
+            dist: {
+                files: {
+                    'dist/js/red.min.js': ['dist/js/red.js']
+                }
+            }
+        },
 
 
-    uglify: {
-      options: {
-        mangle: {
-          except: ['jQuery', 'require']
+        qunit: {
+            files: ['test/**/*.html']
+        },
+
+        jshint: {
+            files: ['Gruntfile.js', 'js/**/*.js'],
+            options: {
+                // options here to override JSHint defaults
+                globals: {
+                    jQuery: true,
+                    console: true,
+                    module: true,
+                    document: true
+                }
+            }
+        },
+
+        watch: {
+            files: ['Gruntfile.js', 'js/**/*.js', 'less/**/*.less'],
+            tasks: ['concat', 'uglify', 'less', 'cssmin']
         }
-        // compress: false,
-        // beautify: true
-      },
 
-      file_b: {
-        options: {
-          banner: purpleJSBanner,
-          mangle: {
-            except: ['jQuery', 'require']
-          }
-          // compress: false,
-          // beautify: true
-        },
-        files: [
-          {
-            src: [ dir.dist+'/'+version+'/purple.js' ],
-            dest:  dir.dist+'/'+version+'/purple.min.js',
-          }
+    });
 
-        ],
-      }
+    grunt.loadNpmTasks('grunt-contrib-less');
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
+    grunt.loadNpmTasks('grunt-contrib-concat');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
+    grunt.loadNpmTasks('grunt-contrib-watch');
+    // grunt.loadNpmTasks('grunt-contrib-jshint');
+    // grunt.loadNpmTasks('grunt-contrib-qunit');
 
-    },
+    // grunt.registerTask('test', ['jshint', 'qunit']);
+    // grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
 
-    compress: {
-      foo: {
-        options: {
-          archive: 'snapshot/'+pkg.name+'_v'+pkg.version+'_'+Date.now()+'.zip',
-          mode: 'zip'
-        },
-        files: [
-          {
-            src: [
-              dir.grunt+'Gruntfile.js',
-              dir.grunt+'package.json',
-              dir.grunt+'README.md',
-              dir.grunt+'src/**/*'
-            ]
-          }
-        ]
-      }
-    },
+    // grunt.registerTask('default', ['concat', 'uglify']);
 
-  });
-
-  grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-contrib-compress');
-  grunt.registerTask('build', ['concat', 'uglify', 'compress']);
 };
