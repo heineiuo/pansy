@@ -29,6 +29,7 @@ function purple (name) {
       },
       back: function(){
         // 后退一步
+        history.back()
       },
       route: function(href){
         var router = {

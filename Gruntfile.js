@@ -17,20 +17,6 @@ module.exports = function(grunt) {
                         "foot.js"
                     ]
                 }
-            },
-
-            less: {
-                files: {
-                    'tmp/red.less': [
-                        'less/reset.less',
-                        'less/phone-l.less',
-                        'less/layout.less',
-                        'less/layout-sm.less',
-                        'less/layout-md.less',
-                        'less/layout-lg.less',
-                        'less/elements/btn.less'
-                    ]
-                },
             }
         },
 
