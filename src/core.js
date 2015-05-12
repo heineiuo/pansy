@@ -134,6 +134,35 @@ function purple (name) {
 
 }
 
+purple.node = function (nodeName, stringName) {
+
+
+  if (typeof stringDom !== 'undefined') {
+    var dom = __purple.node[nodename] = string2dom(__purple.template[stringName])
+  } else {
+    var dom = __purple.node[nodename]
+  }
+
+  return domWrapper(dom)
+
+  function string2dom (stringDom) {
+    var wrapper= document.createElement('div')
+    wrapper.innerHTML= stringDom
+    return wrapper.firstChild
+  }
+
+  function domWrapper (dom) {
+    dom.hide = function () {
+      this.style.display = "none"
+    }
+    dom.show = function () {
+      this.style.display = "inherit"
+    }
+    return dom
+  }
+
+}
+
 purple.set = function(name, conf){
   __purple.conf[name] = conf
 }
@@ -174,7 +203,6 @@ purple.start = function(){
       /**
        * 如果是打开新标签，不处理
        */
-
       var href = $a.attr('href') || 0
       var target = $a.attr('target') || 0
 

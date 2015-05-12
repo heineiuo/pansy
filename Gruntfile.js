@@ -14,7 +14,9 @@ module.exports = function(grunt) {
                     'lib/purple.js': [
                         "src/head.js",
                         "src/core.js",
-                        "src/route.js",
+                        "src/render.js",
+                        "src/debug.js",
+                        "src/method.js",
                         "src/foot.js"
                     ]
                 }
