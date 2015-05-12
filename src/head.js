@@ -1,15 +1,21 @@
-/**
- * purple.js v0.4.0 http://purple.heineiuo.com
- * @author Hansel http://heineiuo.com
- *
- * @require jQuery.js http://jquery.com/
- */
+(function (global) {
 
-(function (window) {
+  if ( typeof define === "function" && define.amd ) {
+      define(['jquery'], function ($) {
+        return factory(global, $)
+      })
+  } else {
+      global.purple = factory(global, jQuery)
+  }
 
-    function factory(window, $) {
+  function factory(global, $) {
 
-        /**
-         * private
-         */
-        var __purple = {}
+      /**
+       * private
+       */
+      var __purple = {
+        mainApp: null,
+        apps: {
+          __anonymous: {}
+        }
+      }
