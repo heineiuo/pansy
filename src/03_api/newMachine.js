@@ -9,11 +9,14 @@ function newMachine(arguments) {
 
   var a = {
     prevDiffState: null,
+    
     states: {},
-    stateNow: null,
-    statePrev: null,
     stateNames: [],
     stateReadyNames: [],
+
+    stateNow: null,
+    statePrev: null,
+
     eventArray: [],
     url: null
   }

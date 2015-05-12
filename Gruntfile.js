@@ -11,10 +11,11 @@ module.exports = function(grunt) {
                     separator: ';'
                 },
                 files: {
-                    'dist/js/red.js': [
-                        "head.js",
-                        "route.js",
-                        "foot.js"
+                    'lib/purple.js': [
+                        "src/head.js",
+                        "src/core.js",
+                        "src/route.js",
+                        "src/foot.js"
                     ]
                 }
             }
@@ -22,22 +23,21 @@ module.exports = function(grunt) {
 
         uglify: {
             options: {
-                banner: '/*! RED.js <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+                banner: '/*! PURPLE.js v<%= grunt.package.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
             },
             dist: {
                 files: {
-                    'dist/js/red.min.js': ['dist/js/red.js']
+                    'lib/purple.min.js': ['lib/purple.js']
                 }
             }
         },
-
 
         qunit: {
             files: ['test/**/*.html']
         },
 
         jshint: {
-            files: ['Gruntfile.js', 'js/**/*.js'],
+            files: ['Gruntfile.js', 'lib/purple.js'],
             options: {
                 // options here to override JSHint defaults
                 globals: {
@@ -50,14 +50,12 @@ module.exports = function(grunt) {
         },
 
         watch: {
-            files: ['Gruntfile.js', 'js/**/*.js', 'less/**/*.less'],
-            tasks: ['concat', 'uglify', 'less', 'cssmin']
+            files: ['Gruntfile.js', 'src/**/*.js'],
+            tasks: ['concat', 'uglify']
         }
 
     });
 
-    grunt.loadNpmTasks('grunt-contrib-less');
-    grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-watch');

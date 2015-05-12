@@ -9,13 +9,3 @@
   }
 
   function factory(global, $) {
-
-      /**
-       * private
-       */
-      var __purple = {
-        mainApp: null,
-        apps: {
-          __anonymous: {}
-        }
-      }
