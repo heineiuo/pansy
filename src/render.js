@@ -45,14 +45,26 @@ function render (node, tree, animation) {
     // 找出needCreate
     // 遍历treearr到show
     for (var i = 0; i < treeArr.length; i++) {
-      var nodeName = treeArr[i][treeArr[i].length-1]
+      var _len = treeArr[i].length
+      var nodeName = treeArr[i][_len-1]
       diff.show.push(nodeName)
       if (typeof __purple.node[nodeName] === 'undefined')) {
-        needCreate.push(treeArr[i])
+        // needCreate.push(treeArr[i])
+        // 构建 needCreate
+
+        if (_len == 1) {
+          $target = $(body)
+        } else {
+          $target = $(treeArr[i][_len-2])
+        }
+      
+        $(purple.node(treeArr[i][0])).appendTo($target)
+
+
       };
     }
 
-    // 构建 needCreate
+
 
 
 
