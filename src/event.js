@@ -14,3 +14,4 @@ function clearEvents(machine) {
   
   machine.eventArray = [] // 清空事件集
 }
+
