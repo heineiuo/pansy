@@ -47,12 +47,14 @@ function render (node, tree, animation) {
     for (var i = 0; i < treeArr.length; i++) {
       var nodeName = treeArr[i][treeArr[i].length-1]
       diff.show.push(nodeName)
-      if (typeof __purple.node[nodeName] === 'undefined')) {
+      if (typeof __purple.node[nodeName] === 'undefined') {
         needCreate.push(treeArr[i])
+        // 构建 needCreate
+        var parentNodeName = treeArr[i][treeArr[i].length-2]
+        
       };
     }
 
-    // 构建 needCreate
 
 
 

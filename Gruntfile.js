@@ -34,6 +34,16 @@ module.exports = function(grunt) {
             }
         },
 
+        copy: {
+            options: {},
+            dist: {
+                files: {
+                    'public/purple.js': ['lib/purple.js']
+                }
+            }
+        },
+
+
         qunit: {
             files: ['test/**/*.html']
         },
@@ -53,14 +63,16 @@ module.exports = function(grunt) {
 
         watch: {
             files: ['Gruntfile.js', 'src/**/*.js'],
-            tasks: ['concat', 'uglify']
+            tasks: ['concat', 'uglify', 'copy']
         }
 
     });
 
+
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-contrib-copy');
     // grunt.loadNpmTasks('grunt-contrib-jshint');
     // grunt.loadNpmTasks('grunt-contrib-qunit');
 

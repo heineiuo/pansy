@@ -9,6 +9,7 @@
     "grunt-contrib-uglify": "latest",
     "grunt-contrib-concat": "latest",
     "grunt-contrib-watch": "latest",
+    "grunt-contrib-copy": "latest",
     "grunt-contrib-compress": "latest"
   },
 
