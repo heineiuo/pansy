@@ -106,11 +106,11 @@ function purple (name) {
       route: function(rawHref) {
         // 判断href是否合法
 
-        if (rawHref instanceof Array) {
+        if (isArray(rawHref)) {
           var href = new RegExp('\/'+rawHref.join('\/')+'\/')
-        } else if (rawHref instanceof String) {
+        } else if (isString(rawHref)) {
           var href = new RegExp('\/'+rawHref+'\/')
-        } else if (rawHref instanceof RegExp){
+        } else if (isRegExp(rawHref)){
           var href = rawHref
         } else {
           // todo error handle
@@ -134,34 +134,7 @@ function purple (name) {
 
 }
 
-purple.node = function (nodeName, stringName) {
 
-
-  if (typeof stringDom !== 'undefined') {
-    var dom = __purple.node[nodename] = string2dom(__purple.template[stringName])
-  } else {
-    var dom = __purple.node[nodename]
-  }
-
-  return domWrapper(dom)
-
-  function string2dom (stringDom) {
-    var wrapper= document.createElement('div')
-    wrapper.innerHTML= stringDom
-    return wrapper.firstChild
-  }
-
-  function domWrapper (dom) {
-    dom.hide = function () {
-      this.style.display = "none"
-    }
-    dom.show = function () {
-      this.style.display = "inherit"
-    }
-    return dom
-  }
-
-}
 
 purple.set = function(name, conf){
   __purple.conf[name] = conf
