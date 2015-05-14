@@ -8,3 +8,6 @@ snapshot
 Thumb.db
 archive
 npm-debug.log
+index.js
+app
+conf
