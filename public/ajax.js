@@ -1,5 +1,4 @@
-
-purple.ajax = function (arg) {
+function ajax (arg) {
 
   var url = arg.url || __purple.apipath
   var callback = arg.callback || function () {}
@@ -69,5 +68,4 @@ purple.ajax = function (arg) {
 
 
 }
-
 

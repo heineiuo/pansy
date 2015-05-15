@@ -4,9 +4,10 @@
  * private
  */
 var __purple = {
+  tree: {},
   template: {}, // html模板 string类型
   node: {}, // dom 对象
-  apps: {
+  app: {
     __anonymous: {}
   },
   conf: {
@@ -20,15 +21,15 @@ function purple (name) {
   // 如果没传入name，返回主app或者匿名app
   if (arguments.length === 0 ) {
     if (__purple.conf.mainApp !== null) {
-      return __purple.apps[__purple.conf.mainApp]
+      return __purple.app[__purple.conf.mainApp]
     } else {
-      return __purple.apps.__anonymous
+      return __purple.app.__anonymous
     }
 
   // 否则，返回已建立的app，或者建立app
   } else {
-    if (typeof __purple.apps[name] != 'undefined') {
-      return __purple.apps[name]
+    if (isDefined(__purple.app[name])) {
+      return __purple.app[name]
     } else {
       return newApp(name)
     }
@@ -37,7 +38,7 @@ function purple (name) {
   // 生成app
   function newApp (name) {
 
-    var app = __purple.apps[name] = {
+    var app = __purple.app[name] = {
 
       name: name,
 
@@ -80,13 +81,15 @@ function purple (name) {
       /**
        * 路由跳转
        */
-      go: function(href){
+      go: function(href, type){
 
         var req = parseURL(href)
         // 跳转是否结束
         req._end = false
         // 原始请求连接
         req.rawUrl = href 
+        // 堆栈方式
+        req.historyStateType = type || 'push'
 
         var res = {
           end: function () {
@@ -111,6 +114,13 @@ function purple (name) {
           for(key in app.list) {
             if (app.list[key].regexp.test(req.pathname)) {
               console.log('解析路由成功：'+app.list[key].regexp)
+
+              if (req.historyStateType == 'replace') {
+                history.replaceState('data', 'title', req.parsedURL)
+              } else {
+                history.pushState('data', 'title', req.parsedURL)
+              }
+
               fns = fns.concat(app.list[key].fns)
               return next()
             }
@@ -160,7 +170,7 @@ function purple (name) {
         return appHref
       },
 
-      render: function(tree, animation){
+      render: function(tree, animation) {
         render(document.body, tree, animation)
       }
     }
@@ -181,9 +191,9 @@ purple.get = function(name){
 
 purple.start = function() {
 
+
   document.onreadystatechange = function () {
     if (document.readyState == "complete") {
-
       var _len = document.scripts
       for (var i = 0; i < _len.length; i++) {
         var s = document.scripts[i]
@@ -192,98 +202,48 @@ purple.start = function() {
         }
       }
 
-      window.onpopstate = function(){
-        var href = location.href
-        purple().go(href)
-      }
+      console.log('系统启动成功...')
 
-      document.addEventListener('click', eventClickAnchor,false)
-
-      console.log('系统启动...')
-      console.log('正在加载初始页...')
-      
       purple().go(location.href)
-
       console.log('初始页加载成功...')
+
+      window.addEventListener('popstate', eventPopstate, false)
       console.log('正在监听URL变化...')
 
+      document.addEventListener('click', eventClickAnchor, false)
+      console.log('正在监听链接点击...')
 
     }
 
   }
 
-
-
-  /**
-   * 绑定a标签点击事件
-   */
-  function eventClickAnchor(event) {
-
-      /**
-       * 获取目标dom
-       */
-      var a = event.target
-
-      /**
-       * 如果是打开新标签，不处理
-       */
-      var href = $a.attr('href') || 0
-      var target = $a.attr('target') || 0
-
-      if (href != 0 && target==0) {
-
-        var transport = parseURL(href)
-
-        if (__purple.scope.test(transport.href)) {
-
-          var machine = getRouter($a[0]);
-
-          /**
-           * 如果没有控制器，不处理（比如打算搞的spinner）
-           */
-          if ( machine != false ) {
-
-            if ( event && event.preventDefault ) {
-              event.preventDefault();
-            } else {
-              window.event.returnValue = false;
-            }
-
-            routerHandle({
-              machine: machine,
-              transport: transport,
-              type: 'push',
-              clearCache: false
-            })
-
-          }
-          
-        };
-
-      };
-
-
-
+  function eventPopstate(){
+    var href = location.href
+    purple().go(href, 'replace')
   }
 
+  function eventClickAnchor(event) {
+    var href = findClosestAnchorHref(event.target)
+    if (href !== null) {
+      event.preventDefault()
+      purple().go(href)
+    }
 
+    function findClosestAnchorHref(dom) {
+      var href
+      r(dom)
+      return href
 
-  // /** 
-  //  * 监听url改变事件  window.onpopstate
-  //  */
+      function r(dom) {
+        if (dom == null) {
+          href = null
+        } else if (dom.nodeName == 'A') {
+          href = dom.href || null
+        } else  {
+          r(dom.parentNode)
+        }
+      }
 
-  function eventPopsteate(){
-
-    var transport = parseURL(location.href)
-    if (__purple.scope.test(transport.href)) {
-
-      routerHandle({
-        machine: __purple.machineMaster,
-        transport: transport,
-        type:'replace',
-        clearCache: false
-      })
-    
     }
 
   }

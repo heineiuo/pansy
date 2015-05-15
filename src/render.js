@@ -2,10 +2,10 @@
  * 模板渲染
  */ 
 
-purple.node = function (nodeName, stringName) {
+purple.node = function (nodeName, stringDom) {
   
-  if (isDefined(stringName)) {
-    var dom = __purple.node[nodeName] = string2dom(__purple.template[stringName])
+  if (isDefined(stringDom)) {
+    var dom = __purple.node[nodeName] = string2dom(stringDom)
   } else {
     var dom = __purple.node[nodeName] || document.createElement('div')
   }
@@ -40,7 +40,7 @@ purple.node = function (nodeName, stringName) {
       if (dom.childNodes.length > 0) {
         for (var i = dom.childNodes.length-1; i > -1; i--) {
           if (dom.childNodes[i].nodeName != '#text') {
-            // 不递归了
+            // 心累了，不递归了
           } else {
             dom.childNodes[i].remove()
           }
@@ -53,8 +53,9 @@ purple.node = function (nodeName, stringName) {
 
 
 function render (node, tree, animation) {
-  var oldTree = __purple.currentPurpleTemplateStructure || {}
+  var oldTree = __purple.tree || {}
   var diff = compareTree(oldTree, tree)
+  __purple.tree = tree
   /*  => 
    diff.show
    diff.hide
@@ -86,6 +87,9 @@ function render (node, tree, animation) {
 
     // 遍历出hide
     for (var i = 0; i < oldTreeArr.length; i++) {
+
+      console.log(oldTreeArr[i], treeArr)
+
       if (!in_array(oldTreeArr[i], treeArr)) {
         diff.hide.push(oldTreeArr[i][oldTreeArr[i].length-1])
       }
@@ -106,7 +110,7 @@ function render (node, tree, animation) {
 
         var jack = parentNode.querySelector('[data-id="'+nodeName+'"]')
         if (jack == null) {jack = parentNode}
-        jack.appendChild(purple.node(nodeName, nodeName))
+        jack.appendChild(purple.node(nodeName, __purple.template[nodeName]))
       }
     }
 

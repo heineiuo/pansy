@@ -1,11 +1,11 @@
 (function (global) {
 
   if ( typeof define === "function" && define.amd ) {
-      define(['jquery'], function ($) {
-        return factory(global, $)
-      })
+    define(function () {
+      return factory(global)
+    })
   } else {
-      global.purple = factory(global, jQuery)
+    global.purple = factory(global)
   }
 
-  function factory(global, $) {
+  function factory(global) {
