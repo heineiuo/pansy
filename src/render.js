@@ -4,35 +4,56 @@
 
 purple.node = function (nodeName, stringName) {
   
-  if (typeof stringDom !== 'undefined') {
-    var dom = __purple.node[nodename] = string2dom(__purple.template[stringName])
+  if (isDefined(stringName)) {
+    var dom = __purple.node[nodeName] = string2dom(__purple.template[stringName])
   } else {
-    var dom = __purple.node[nodename]
+    var dom = __purple.node[nodeName] || document.createElement('div')
   }
 
   return domWrapper(dom)
 
   function string2dom (stringDom) {
     var wrapper= document.createElement('div')
-    wrapper.innerHTML= stringDom
+    // stringDom = stringDom.replace(/[\r\n\s]/g, "") // ERROR
+    wrapper.innerHTML = stringDom
+    deleteChildTextNode(wrapper)
     return wrapper.firstChild
   }
 
   function domWrapper (dom) {
+
     dom.hide = function () {
-      this.style.display = "none"
+      dom.style.display = "none"
     }
     dom.show = function () {
-      this.style.display = "inherit"
+      dom.style.display = "inherit"
     }
     return dom
   }
+
+  function deleteChildTextNode (dom) {
+
+    r(dom)
+    return dom
+
+    function r(dom) {
+      if (dom.childNodes.length > 0) {
+        for (var i = dom.childNodes.length-1; i > -1; i--) {
+          if (dom.childNodes[i].nodeName != '#text') {
+            // 不递归了
+          } else {
+            dom.childNodes[i].remove()
+          }
+        }
+      }
+    } // end r
+  } // end deleteChildTextNode
 
 }
 
 
 function render (node, tree, animation) {
-  var oldTree = __purple.currentPurpleTemplateStructure
+  var oldTree = __purple.currentPurpleTemplateStructure || {}
   var diff = compareTree(oldTree, tree)
   /*  => 
    diff.show
@@ -74,13 +95,21 @@ function render (node, tree, animation) {
     for (var i = 0; i < treeArr.length; i++) {
       var nodeName = treeArr[i][treeArr[i].length-1]
       diff.show.push(nodeName)
-      if (typeof __purple.node[nodeName] === 'undefined') {
-        var parentNodeName = treeArr[i][treeArr[i].length-2]
-        var parentNode = __purple[parentNodeName]
-        var jack = parentNode.querySelector('[data-id='+nodeName+']')
+      // 未加载过的node
+      if (isUndefined(__purple.node[nodeName])) {
+        if (treeArr[i].length == 1) {
+          var parentNode = document.body
+        } else {
+          var parentNodeName = treeArr[i][treeArr[i].length-2]
+          var parentNode = __purple.node[parentNodeName] || {aaa:'aaaa'}
+        }
+
+        var jack = parentNode.querySelector('[data-id="'+nodeName+'"]')
         if (jack == null) {jack = parentNode}
-        jack.appendChild(purple(nodeName))
+        jack.appendChild(purple.node(nodeName, nodeName))
       }
     }
+
+    return diff
   }
 }

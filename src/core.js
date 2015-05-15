@@ -5,7 +5,7 @@
  */
 var __purple = {
   template: {}, // html模板 string类型
-  dom: {}, // dom 对象
+  node: {}, // dom 对象
   apps: {
     __anonymous: {}
   },
@@ -17,12 +17,15 @@ var __purple = {
 
 function purple (name) {
 
+  // 如果没传入name，返回主app或者匿名app
   if (arguments.length === 0 ) {
     if (__purple.conf.mainApp !== null) {
       return __purple.apps[__purple.conf.mainApp]
     } else {
       return __purple.apps.__anonymous
     }
+
+  // 否则，返回已建立的app，或者建立app
   } else {
     if (typeof __purple.apps[name] != 'undefined') {
       return __purple.apps[name]
@@ -31,15 +34,26 @@ function purple (name) {
     }
   }
 
+  // 生成app
   function newApp (name) {
 
     var app = __purple.apps[name] = {
 
       name: name,
+
+      // 中间件
       middleware: [],
+
+      // 路由集合
       list: {},
+
+      // 配置
       conf: {},
+
+      // 当前href
       currentHref: null,
+
+      // 之前的href
       prevHref: null,
 
       /**
@@ -67,42 +81,43 @@ function purple (name) {
        * 路由跳转
        */
       go: function(href){
-        // 判断href是否合法
-        // 判断href是否在list中
 
-        var appHref = findRoute(href)
-        if(appHref == null) {
-          console.log('无法解析的地址：' + href);
-          //location.href = href
-          return
-        }
-        var fns = app.middleware.concat(appHref.fns)
-        /**
-         * request 对象
-         */
-        var req = {
-          _end: false, // 跳转是否结束
-          query: {}, // url中的请求参数
-          rawUrl: '', // 原始请求连接
-          paths: [] // 请求路径转数组
-        }
+        var req = parseURL(href)
+        // 跳转是否结束
+        req._end = false
+        // 原始请求连接
+        req.rawUrl = href 
+
         var res = {
           end: function () {
             req._end = true
           }
         }
 
+        // 使用中间件
+        var fns = [findRoute].concat(app.middleware)
+
         next()
 
-        function findRoute(href){
+        /*
+          查找路由器
+         */
+        function findRoute(req, res, next) {
+          console.log('正在解析地址：'+req.rawUrl)
+
+          // 判断href是否合法
+          // 判断href是否在list中
           console.log(app.list)
-          var _len = app.list.length
-          for(var i=0; i<_len;i++) {
-            if (app.list[i].regexp.test(href)){
-              return app.list[i]
+          for(key in app.list) {
+            if (app.list[key].regexp.test(req.pathname)) {
+              console.log('解析路由成功：'+app.list[key].regexp)
+              fns = fns.concat(app.list[key].fns)
+              return next()
             }
           }
-          return null
+
+          console.warn('无法解析的地址：' + req.pathname)
+          res.end()
         }
 
         function next () {
@@ -124,9 +139,9 @@ function purple (name) {
         // 判断href是否合法
 
         if (isArray(rawHref)) {
-          var href = new RegExp('\/'+rawHref.join('\/')+'\/')
+          var href = new RegExp('^\/'+rawHref.join('\/')+'\/$')
         } else if (isString(rawHref)) {
-          var href = new RegExp('\/'+rawHref+'\/')
+          var href = new RegExp('^'+rawHref+'$')
         } else if (isRegExp(rawHref)){
           var href = rawHref
         } else {
@@ -137,12 +152,16 @@ function purple (name) {
         var appHref = app.list[href] = {
           regexp: href,
           get: function () {
-            var fns = Array.call(null, arguments)
-            appHref.fns = fns
+            var fns = Array.prototype.slice.call(arguments,0)
+            appHref.fns = fns[0]
           }
         }
 
         return appHref
+      },
+
+      render: function(tree, animation){
+        render(document.body, tree, animation)
       }
     }
 
@@ -160,37 +179,44 @@ purple.get = function(name){
   return __purple.conf[name]
 }
 
-purple.start = function(){
+purple.start = function() {
 
-  console.log(purple())
+  document.onreadystatechange = function () {
+    if (document.readyState == "complete") {
 
-  console.log('系统启动...')
-  console.log('正在加载初始页...')
-  purple().go(location.href)
-  console.log('初始页加载成功...')
-  console.log('正在监听URL变化...')
+      var _len = document.scripts
+      for (var i = 0; i < _len.length; i++) {
+        var s = document.scripts[i]
+        if (s.type === 'text/template') {
+          __purple.template[s.attributes.getNamedItem('data-name').value] = s.innerText
+        }
+      }
 
-  var _len = document.scripts
-  for (var i = 0; i < _len.length; i++) {
-    var s = document.scripts[i]
-    if (s.type === 'text/template') {
-      __purple.template[s.attributes.getNamedItem('data-name').value] = s.innerText
+      window.onpopstate = function(){
+        var href = location.href
+        purple().go(href)
+      }
+
+      document.addEventListener('click', eventClickAnchor,false)
+
+      console.log('系统启动...')
+      console.log('正在加载初始页...')
+      
+      purple().go(location.href)
+
+      console.log('初始页加载成功...')
+      console.log('正在监听URL变化...')
+
+
     }
-  }
 
-  window.onpopstate = function(){
-    var href = location.href
-    purple().go(href)
   }
-
-  document.addEventListener('click', eventClickAnchor,false)
 
 
 
   /**
    * 绑定a标签点击事件
    */
-
   function eventClickAnchor(event) {
 
       /**
