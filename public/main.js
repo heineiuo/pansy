@@ -29,3 +29,5 @@ coreCtrl.replaceName = function (req, res) {
 
 mainApp.route('/').get(coreCtrl.renderIndex)
 mainApp.route('/hello').get(coreCtrl.renderHello, coreCtrl.replaceName)
+
+purple.start()

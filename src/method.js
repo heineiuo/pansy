@@ -261,3 +261,6 @@ function getParentByTag(dom, nodename) {
     return dom.parentNode || dom.parentElement
   }
 }
+
+
+

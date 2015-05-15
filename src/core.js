@@ -70,7 +70,11 @@ function purple (name) {
         // 判断href是否合法
         // 判断href是否在list中
 
-        var appHref = app.list[href]
+        var appHref = findRoute(href)
+        if(appHref == null) {
+          location.href = href
+          return
+        }
         var fns = app.middleware.concat(appHref.fns)
         /**
          * request 对象
@@ -88,6 +92,13 @@ function purple (name) {
         }
 
         next()
+
+        function findRoute(href){
+          console.log(app.list[href])
+
+          return null
+        }
+
         function next () {
           if (!req._end) {
             if (fns.length > 0) {
@@ -146,6 +157,8 @@ purple.get = function(name){
 
 purple.start = function(){
 
+  console.log('系统启动...')
+  console.log('正在监听URL变化...')
 
   var _len = document.scripts
   for (var i = 0; i < _len.length; i++) {
@@ -160,18 +173,20 @@ purple.start = function(){
     purple.getMainapp().go(href)
   }
 
+  document.addEventListener('click', eventClickAnchor,false)
+
 
 
   /**
    * 绑定a标签点击事件
    */
 
-  function eventClickA(event) {
+  function eventClickAnchor(event) {
 
       /**
        * 获取目标dom
        */
-      var $a = $(event.target).closest('a');
+      var a = event.target
 
       /**
        * 如果是打开新标签，不处理
