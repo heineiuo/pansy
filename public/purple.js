@@ -105,6 +105,7 @@ function purple (name) {
         var res = {
           end: function () {
             req._end = true
+            console.log('路由跳转完毕...')
           }
         }
 
@@ -121,7 +122,6 @@ function purple (name) {
 
           // 判断href是否合法
           // 判断href是否在list中
-          console.log(app.list)
           for(key in app.list) {
             if (app.list[key].regexp.test(req.pathname)) {
               console.log('解析路由成功：'+app.list[key].regexp)
@@ -133,6 +133,7 @@ function purple (name) {
               }
 
               fns = fns.concat(app.list[key].fns)
+
               return next()
             }
           }
@@ -150,10 +151,13 @@ function purple (name) {
             }
           }
         }
+
+        
       },
 
       back: function(){
         // 后退一步
+        history.back()
       },
 
       route: function(rawHref) {
@@ -173,8 +177,7 @@ function purple (name) {
         var appHref = app.list[href] = {
           regexp: href,
           get: function () {
-            var fns = Array.prototype.slice.call(arguments,0)
-            appHref.fns = fns[0]
+            appHref.fns = Array.prototype.slice.call(arguments,0)
           }
         }
 
@@ -351,9 +354,6 @@ function render (node, tree, animation) {
 
     // 遍历出hide
     for (var i = 0; i < oldTreeArr.length; i++) {
-
-      console.log(oldTreeArr[i], treeArr)
-
       if (!in_array(oldTreeArr[i], treeArr)) {
         diff.hide.push(oldTreeArr[i][oldTreeArr[i].length-1])
       }

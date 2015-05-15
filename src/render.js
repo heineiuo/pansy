@@ -87,9 +87,6 @@ function render (node, tree, animation) {
 
     // 遍历出hide
     for (var i = 0; i < oldTreeArr.length; i++) {
-
-      console.log(oldTreeArr[i], treeArr)
-
       if (!in_array(oldTreeArr[i], treeArr)) {
         diff.hide.push(oldTreeArr[i][oldTreeArr[i].length-1])
       }

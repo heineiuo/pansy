@@ -19,10 +19,10 @@ coreCtrl.renderHello = function (req, res, next) {
   next()
 }
 
-coreCtrl.replaceName = function (req, res) {
+coreCtrl.replaceName = function (req, res, next) {
 
-  $('.name').text(req.query.name)
   res.end()
+  next()
 
 }
 
