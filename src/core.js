@@ -6,11 +6,11 @@
 var __purple = {
   template: {}, // html模板 string类型
   dom: {}, // dom 对象
-  mainApp: null,
   apps: {
     __anonymous: {}
   },
   conf: {
+    mainApp: null,
     scope: '/'
   }
 }
@@ -18,8 +18,8 @@ var __purple = {
 function purple (name) {
 
   if (arguments.length === 0 ) {
-    if (__purple.mainApp !== null) {
-      return __purple.apps[__purple.mainApp]
+    if (__purple.conf.mainApp !== null) {
+      return __purple.apps[__purple.conf.mainApp]
     } else {
       return __purple.apps.__anonymous
     }
@@ -46,7 +46,7 @@ function purple (name) {
        * 配置参数
        */
       set: function(name, conf){
-        this.conf[name] = conf
+          this.conf[name] = conf
       },
 
       /**
@@ -72,7 +72,8 @@ function purple (name) {
 
         var appHref = findRoute(href)
         if(appHref == null) {
-          location.href = href
+          console.log('无法解析的地址：' + href);
+          //location.href = href
           return
         }
         var fns = app.middleware.concat(appHref.fns)
@@ -94,8 +95,13 @@ function purple (name) {
         next()
 
         function findRoute(href){
-          console.log(app.list[href])
-
+          console.log(app.list)
+          var _len = app.list.length
+          for(var i=0; i<_len;i++) {
+            if (app.list[i].regexp.test(href)){
+              return app.list[i]
+            }
+          }
           return null
         }
 
@@ -146,7 +152,6 @@ function purple (name) {
 }
 
 
-
 purple.set = function(name, conf){
   __purple.conf[name] = conf
 }
@@ -157,7 +162,12 @@ purple.get = function(name){
 
 purple.start = function(){
 
+  console.log(purple())
+
   console.log('系统启动...')
+  console.log('正在加载初始页...')
+  purple().go(location.href)
+  console.log('初始页加载成功...')
   console.log('正在监听URL变化...')
 
   var _len = document.scripts
@@ -170,7 +180,7 @@ purple.start = function(){
 
   window.onpopstate = function(){
     var href = location.href
-    purple.getMainapp().go(href)
+    purple().go(href)
   }
 
   document.addEventListener('click', eventClickAnchor,false)
@@ -254,3 +264,4 @@ purple.start = function(){
 
 
 }
+

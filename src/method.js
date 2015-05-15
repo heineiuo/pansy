@@ -264,3 +264,7 @@ function getParentByTag(dom, nodename) {
 
 
 
+function closest(child, target) {
+
+
+}
