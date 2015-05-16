@@ -95,6 +95,9 @@ function purple (name) {
           end: function () {
             req._end = true
             console.log('路由跳转完毕...')
+          },
+          render: function(tree, animation) {
+            render(document.body, tree, animation)
           }
         }
 
