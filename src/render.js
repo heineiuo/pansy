@@ -1,16 +1,16 @@
 /**
  * 模板渲染
- */ 
+ */
 
 purple.node = function (nodeName, stringDom) {
-  
+
   if (isDefined(stringDom)) {
     var dom = __purple.node[nodeName] = string2dom(stringDom)
   } else {
     var dom = __purple.node[nodeName] || document.createElement('div')
   }
 
-  return domWrapper(dom)
+  return dom
 
   function string2dom (stringDom) {
     var wrapper= document.createElement('div')
@@ -20,19 +20,7 @@ purple.node = function (nodeName, stringDom) {
     return wrapper.firstChild
   }
 
-  function domWrapper (dom) {
-
-    dom.hide = function () {
-      dom.style.display = "none"
-    }
-    dom.show = function () {
-      dom.style.display = "inherit"
-    }
-    return dom
-  }
-
   function deleteChildTextNode (dom) {
-
     r(dom)
     return dom
 
@@ -52,7 +40,56 @@ purple.node = function (nodeName, stringDom) {
 }
 
 
-function render (node, tree, animation) {
+
+function render(node, tree, animation) {
+
+  var oldTree = __purple.tree;
+  var oldTreeArr = obj2arr(oldTree);
+  if(oldTreeArr.length>0) {
+    var prevScope = purple.node(oldTreeArr[0][0]);
+    if(typeof animation == 'undefined') {
+      prevScope.remove();
+    }
+    prevScope.id = 'purple-scope-prev';
+  } else {
+    var prevScope = null
+  }
+
+
+  __purple.node = {};
+  var treeArr = obj2arr(tree);
+  var newScope = purple.node(treeArr[0][0], purple.template(treeArr[0][0]));
+
+  for(var i=1; i<treeArr.length; i++){
+    if(treeArr[i].length==1){
+      var parentNode = newScope;
+    } else {
+      var parentNodeName = treeArr[i][treeArr[i].length - 2]
+      var parentNode = purple.node(parentNodeName);
+    }
+    var thisNodeName = treeArr[i][treeArr[i].length -1]
+    var thisNode = purple.node(thisNodeName, purple.template(thisNodeName));
+    var jack = parentNode.querySelector('[data-id="'+thisNodeName+'"]');
+    if (jack == null) {jack = parentNode}
+    jack.appendChild(thisNode);
+  }
+
+  __purple.tree = tree;
+  if(typeof animation == 'undefined') {
+    document.body.appendChild(newScope);
+  } else {
+    animation(prevScope, newScope)
+  }
+
+
+}
+
+
+
+
+
+
+function render2 (node, tree, animation) {
   var oldTree = __purple.tree || {}
   var diff = compareTree(oldTree, tree)
   __purple.tree = tree

@@ -186,25 +186,30 @@ function purple (name) {
 
 }
 
+purple.template = function(name){
+  return __purple.template[name] || '<div></div>';
+};
+
 
 purple.set = function(name, conf){
   __purple.conf[name] = conf
-}
+};
 
 purple.get = function(name){
   return __purple.conf[name]
-}
+};
 
 purple.start = function() {
 
 
   document.onreadystatechange = function () {
     if (document.readyState == "complete") {
-      var _len = document.scripts
-      for (var i = 0; i < _len.length; i++) {
+      var _len = document.scripts.length
+      for (var i = _len-1; i > -1; i--) {
         var s = document.scripts[i]
         if (s.type === 'text/template') {
           __purple.template[s.attributes.getNamedItem('data-name').value] = s.innerText
+          s.remove()
         }
       }
 

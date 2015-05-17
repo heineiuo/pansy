@@ -17,6 +17,7 @@ module.exports = function(grunt) {
                         "src/render.js",
                         "src/debug.js",
                         "src/method.js",
+                        "src/dom-enhance.js",
                         "src/foot.js"
                     ]
                 }
