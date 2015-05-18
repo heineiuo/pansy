@@ -115,13 +115,17 @@ function purple (name) {
 
         // 使用中间件
         var fns = [findRoute].concat(app.middleware)
-
         next()
-
+        
         /*
           查找路由器
          */
         function findRoute(req, res, next) {
+          if (req.historyStateType == 'replace') {
+            history.replaceState('data', 'title', req.parsedURL)
+          } else {
+            history.pushState('data', 'title', req.parsedURL)
+          }
           console.log('正在解析地址：'+req.rawUrl)
 
           // 判断href是否合法
@@ -129,15 +133,7 @@ function purple (name) {
           for(key in app.list) {
             if (app.list[key].regexp.test(req.pathname)) {
               console.log('解析路由成功：'+app.list[key].regexp)
-
-              if (req.historyStateType == 'replace') {
-                history.replaceState('data', 'title', req.parsedURL)
-              } else {
-                history.pushState('data', 'title', req.parsedURL)
-              }
-
               fns = fns.concat(app.list[key].fns)
-
               return next()
             }
           }
