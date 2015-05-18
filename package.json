@@ -1,7 +1,7 @@
 {
   "name": "purple.js",
   "author": "http://github.com/heineiuo",
-  "version": "0.5.0",
+  "version": "0.5.1-alpha",
   "description": "A SPA Framework.",
 
   "devDependencies": {

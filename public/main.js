@@ -30,5 +30,12 @@ var mainApp = purple('main');
 mainApp.route('/').get(coreCtrl.renderIndex)
 mainApp.route('/hello').get(coreCtrl.renderHello, coreCtrl.replaceName)
 
-purple.set('mainApp', 'main')
-purple.start()
+
+
+document.onreadystatechange = function () {
+  if (document.readyState == "complete") {
+    purple.set('scope', document.body);
+    purple.set('mainApp', 'main');
+    purple.start();
+  }
+}

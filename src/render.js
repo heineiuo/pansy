@@ -6,8 +6,9 @@ purple.node = function (nodeName, stringDom) {
 
   if (isDefined(stringDom)) {
     var dom = __purple.node[nodeName] = string2dom(stringDom)
+    dom.style.display = 'none';
   } else {
-    var dom = __purple.node[nodeName] || document.createElement('div')
+    var dom = __purple.node[nodeName] || null
   }
 
   return dom
@@ -37,11 +38,51 @@ purple.node = function (nodeName, stringDom) {
     } // end r
   } // end deleteChildTextNode
 
+};
+
+
+
+function render(res, tree, animation) {
+  // 判断是否要清空旧的视图
+  if(res.prevView == null) {
+    res.prevView = purple.node('prevView', '<div id="prevView"></div>');
+    for(var i=purple.scope().childNodes.length - 1; i> -1; i--){
+      res.prevView.appendChild(purple.scope().childNodes[i]);
+    }
+    purple.scope().appendChild(res.prevView);
+    __purple.node = {}
+  }
+  var treeArr = obj2arr(tree);
+  // 遍历更新视图
+  for(var i = 0; i<treeArr.length; i++){
+    // 判断是否已经存在
+    var thisNodeName = treeArr[i][treeArr[i].length - 1];
+    if (purple.node(thisNodeName) == null) {
+      var thisNode = purple.node(thisNodeName, __purple.template[thisNodeName]);
+      // 查找父节点
+      if (treeArr[i].length == 1) {
+        var parentNode = purple.scope()
+      } else {
+        var parentNodeName = treeArr[i][treeArr[i].length - 2];
+        var parentNode = purple.node(parentNodeName);
+      }
+      // 查找插口
+      var jack = parentNode.querySelector('[data-id="'+thisNodeName+'"]');
+      if (jack == null) {jack = parentNode}
+      // 插入
+      jack.appendChild(thisNode);
+      if(isUndefined(animation)){
+        thisNode.style.display = null;
+      }
+    }
+  } // 遍历结束
+  if(isDefined(animation)){
+    animation(prevView, purple.scope())
+  }
 }
 
 
-
-function render(node, tree, animation) {
+function render3 (node, tree, animation) {
 
   var oldTree = __purple.tree;
   var oldTreeArr = obj2arr(oldTree);

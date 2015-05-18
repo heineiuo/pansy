@@ -12,9 +12,10 @@ var __purple = {
   },
   conf: {
     mainApp: null,
-    scope: '/'
+    scope: document.body,
+    filter: '/'
   }
-}
+};
 
 function purple (name) {
 
@@ -92,12 +93,20 @@ function purple (name) {
         req.historyStateType = type || 'push'
 
         var res = {
+          timestamp: Date.now(),
+
+          prevView: null,
+
           end: function () {
             req._end = true
+            if(this.prevView != null) {
+              this.prevView.remove()
+            }
             console.log('路由跳转完毕...')
           },
+
           render: function(tree, animation) {
-            render(document.body, tree, animation)
+            render(this, tree, animation)
           }
         }
 
@@ -174,11 +183,8 @@ function purple (name) {
         }
 
         return appHref
-      },
-
-      render: function(tree, animation) {
-        render(document.body, tree, animation)
       }
+
     }
 
     return app
@@ -199,34 +205,32 @@ purple.get = function(name){
   return __purple.conf[name]
 };
 
+purple.scope = function(){
+  return __purple.conf.scope
+}
+
 purple.start = function() {
 
-
-  document.onreadystatechange = function () {
-    if (document.readyState == "complete") {
-      var _len = document.scripts.length
-      for (var i = _len-1; i > -1; i--) {
-        var s = document.scripts[i]
-        if (s.type === 'text/template') {
-          __purple.template[s.attributes.getNamedItem('data-name').value] = s.innerText
-          s.remove()
-        }
-      }
-
-      console.log('系统启动成功...')
-
-      purple().go(location.href)
-      console.log('初始页加载成功...')
-
-      window.addEventListener('popstate', eventPopstate, false)
-      console.log('正在监听URL变化...')
-
-      document.addEventListener('click', eventClickAnchor, false)
-      console.log('正在监听链接点击...')
-
+  var _len = document.scripts.length
+  for (var i = _len-1; i > -1; i--) {
+    var s = document.scripts[i]
+    if (s.type === 'text/template') {
+      __purple.template[s.attributes.getNamedItem('data-name').value] = s.innerText
+      s.remove()
     }
-
   }
+
+  console.log('系统启动成功...')
+
+  purple().go(location.href)
+  console.log('初始页加载成功...')
+
+  window.addEventListener('popstate', eventPopstate, false)
+  console.log('正在监听URL变化...')
+
+  document.addEventListener('click', eventClickAnchor, false)
+  console.log('正在监听链接点击...')
+
 
   function eventPopstate(){
     var href = location.href
@@ -258,7 +262,6 @@ purple.start = function() {
     }
 
   }
-
 
 }
 
