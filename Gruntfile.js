@@ -9,7 +9,7 @@ module.exports = function(grunt) {
             js: {
                 options: {
                     separator: ';',
-                    banner: '/*! PURPLE.js v<%= grunt.package.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+                    banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
                 },
                 files: {
                     'lib/purple.js': [
@@ -27,7 +27,7 @@ module.exports = function(grunt) {
 
         uglify: {
             options: {
-                banner: '/*! PURPLE.js v<%= grunt.package.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+                banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
             },
             dist: {
                 files: {
