@@ -104,7 +104,7 @@ function purple (name) {
         // 使用中间件
         var fns = [findRoute].concat(app.middleware)
         next()
-        
+
         /*
           查找路由器
          */
@@ -127,6 +127,7 @@ function purple (name) {
           }
 
           console.warn('无法解析的地址：' + req.pathname)
+          // todo res.status = 404， 重构fns，插入renderError
           res.end()
         }
 
