@@ -95,6 +95,8 @@ function purple (name) {
         var res = {
           timestamp: Date.now(),
 
+          isFirstRender: true,
+
           prevView: null,
 
           end: function () {
