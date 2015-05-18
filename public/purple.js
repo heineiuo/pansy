@@ -1,3 +1,4 @@
+/*! PURPLE.js v0.4.5 2015-05-18 */
 (function (global) {
 
   if ( typeof define === "function" && define.amd ) {

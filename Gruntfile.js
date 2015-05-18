@@ -8,7 +8,8 @@ module.exports = function(grunt) {
         concat: {
             js: {
                 options: {
-                    separator: ';'
+                    separator: ';',
+                    banner: '/*! PURPLE.js v<%= grunt.package.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
                 },
                 files: {
                     'lib/purple.js': [
