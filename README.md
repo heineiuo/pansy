@@ -1,6 +1,10 @@
 #PURPLE.js
 
 
+## Introduction
+
+    
+
 ## Quick Start
 
     <script src="purple.js"></script>
@@ -46,29 +50,8 @@
 
 ####purple.model
 
-
     purple.model('user')
     purple.model('user', userSchema)
 
 
-####purple.on
-
-    purple.on()
-
-####purple.off
-
-    purple.off()
-
-####purple.offAll
-
-    purple.offAll()
-
-
-### Private Methods
-
-    __purple.build()
-    __purple.template()
-    __purple.DOM()
-    __purple.data._d
-    __purple.data._t
     
