@@ -22,9 +22,9 @@ async.each(srcFilesPathes, function(srcFilePath, callback){
       callback('read file fail');
     } else {
       var dataname = srcFilePath.replace(cwd, '').replace(ext, '');
-      var wrappedData = '<script type="text/template" data-name="'+dataname+'">'
+      var wrappedData = '<script type="text/template" data-name="'+dataname+'">\n\r'
       + data
-      + '</script>';
+      + '\n\r</script>';
       distData += wrappedData;
       callback(null);
     }
