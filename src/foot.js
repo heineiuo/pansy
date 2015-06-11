@@ -1,5 +1,5 @@
 
-  return purple
+  return purple;
 
 
 } // END factory
