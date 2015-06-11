@@ -1,9 +1,8 @@
 {
   "name": "purple.js",
   "author": "http://github.com/heineiuo",
-  "version": "0.5.1-SNAPSHOT",
-  "description": "A SPA Framework.",
-
+  "version": "0.6.0-SNAPSHOT",
+  "description": "A simple router, and flexible controller.",
   "devDependencies": {
     "grunt": "latest",
     "grunt-contrib-uglify": "latest",

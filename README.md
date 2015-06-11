@@ -1,5 +1,10 @@
-#PURPLE.js
+#PURPLE.js v0.6.0
 
+## TODO
+
+* Remove template engine.
+* Better flow control.
+* Custom router listing.
 
 ## Introduction
 
