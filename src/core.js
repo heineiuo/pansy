@@ -95,24 +95,24 @@ function newApp (name) {
     set: function(name, conf) {
       var _thisApp = this;
 
-      if(name == 'onpopstate'){
-        if (_thisApp.conf.onpopstate && !conf ) {
+      if(name == 'onpopstate') {
+        if (_thisApp.conf.onpopstate && !conf) {
           window.removeEventListener('popstate', popstateHandle, false);
         }
-        if ( !_thisApp.conf.onpopstate && conf){
+        if (!_thisApp.conf.onpopstate && conf) {
           window.addEventListener('popstate', popstateHandle, false);
         }
-      } else if (name == 'onanchorclick'){
+      }
+      if (name == 'onanchorclick'){
         if(_thisApp.conf.onanchorclick && !conf){
           document.removeEventListener('click', anchorclickHandle, false);
         }
         if(!_thisApp.conf.onanchorclick && conf) {
           document.addEventListener('click', anchorclickHandle, false);
         }
-      } else {
-        _thisApp.conf[name] = conf;
       }
 
+      _thisApp.conf[name] = conf;
 
       function popstateHandle(event){
         _thisApp.go(location.href)
