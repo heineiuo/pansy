@@ -38,6 +38,10 @@ function indexOf(arr, value, fromIndex) {
   return arr.indexOf(value, fromIndex)
 }
 
+/**
+ * Extend multi objects.
+ * @returns {object}
+ */
 function extend() {
   var result = {};
   var objs = Array.prototype.slice.call(arguments,0);
@@ -49,4 +53,25 @@ function extend() {
     }
   });
   return result;
-};
+}
+
+
+/**
+ * Ready? start!
+ * @api public
+ */
+function ready(start) {
+  /**
+   * Start after document loaded.
+   */
+  if (document.readyState == "complete"){
+    start();
+  } else {
+    document.onreadystatechange = function () {
+      if (document.readyState == "complete") {
+        document.onreadystatechange = null;
+        start();
+      }
+    };
+  }
+}

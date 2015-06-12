@@ -22,21 +22,19 @@ But if you need to do something more with purple, you can use middlewires, which
         alert('hello world!')
     });
 
+    app.set('isMain', 'true');
 
-    purple.set('mainApp', 'main');
-    purple.start()
+    app.go('/');
 
 ### Programmatic API
 
 * <code>[purple()](#purple)</code>
-* <code>[purple.set(name, content)](#purple-set)</code>
-* <code>[purple.start()](#purple-start)</code>
 * <code>[app.route(regex|string).get(stack)]()</code>
 * <code>[app.set(name, content)]()</code>
 * <code>[app.go(url)]()</code>
 * <code>[app.back()]()</code>
 * <code>[app.use(middleware)]()</code>
-* <code>[res.render(tree[, callback])]()</code>
+* <code>[app.listen()]()</code>
 * <code>[res.end()]()</code>
 
 
@@ -48,16 +46,18 @@ But if you need to do something more with purple, you can use middlewires, which
     var app = purple('test');
     console.log(app.name); // => 'test'
 
-##### purple.set(name, content)
 
-    purple.set('mainApp', 'test');
-    purple.set('templateSource', 'script');
-    purple.set('scope', 'body');
+##### app.set(name, content)
+
+    app.set('onanchorclick', true);
+    app.set('onpopstate', true);
 
 
-##### purple.start()
+##### app.get(name)
 
-    purple.start();
+    app.get('onanchorclick');
+    app.get('onpopstate');
+
 
 ##### app.route(regex|string).get(stack)
 
@@ -71,11 +71,6 @@ But if you need to do something more with purple, you can use middlewires, which
     user.profile = ...
 
     app.route('/abc').get(user.index, user.profile)
-
-##### app.set(name, content)
-
-    app.set('listenAnchor', true);
-    app.set('listenPopstate', true);
 
 ##### app.go(url)
 
@@ -91,14 +86,6 @@ But if you need to do something more with purple, you can use middlewires, which
         req.timestamp = Date.now()
         next()
     })
-
-##### res.render(tree[, callback])
-
-    res.render({
-        "home/home": {
-            "home/news": {}
-        }
-    });
 
 ##### res.end()
 

@@ -66,10 +66,6 @@ function purple (name) {
  */
 function newApp (name) {
 
-  if (!__purple.startable){
-    __purple.startable = true;
-    readyStart();
-  }
 
   var app = __purple.app[name] = {
 
@@ -85,9 +81,11 @@ function newApp (name) {
     conf: {
       filter: "/",
       timeout: 45000,
-      state: "waiting", // waiting, running
-
+      onpopstate: false,
+      onanchorclick: false
     },
+
+    state: "complete", // pending, complete
 
     /**
      * current url.
@@ -99,18 +97,37 @@ function newApp (name) {
      */
     prevHref: null,
 
-    listen: function(){
-
-      //anchorclick
-      //popstate
-
+    listen: function() {
+      var _thisApp = this;
     },
 
     /**
      * Set app config.
      */
     set: function(name, conf) {
-      this.conf[name] = conf;
+      var _thisApp = this;
+      _thisApp.conf[name] = conf;
+
+      if (_thisApp.conf.onpopstate){
+        window.addEventListener('popstate', popstateHandle, false);
+      } else {
+        window.removeEventListener('popstate', popstateHandle, false);
+      }
+      if (_thisApp.conf.onanchorclick){
+        document.addEventListener('click', anchorclickHandle, false);
+      } else {
+        document.removeEventListener('click', anchorclickHandle, false);
+      }
+
+      function popstateHandle(event){
+        _thisApp.go(location.href)
+      }
+
+      function anchorclickHandle(evnet){
+        _thisApp.go(getanchorhref(event))
+      }
+
+
     },
 
     /**
@@ -172,6 +189,13 @@ function newApp (name) {
      */
     go: function(href, type){
 
+      var _thisApp = this;
+      if (_thisApp.state == 'pending') {
+        return false;
+      }
+
+      _thisApp.state = 'pending';
+
       var req = extend(parseurl(href), {
         _end: false, // 跳转是否结束
         rawUrl: href, // 原始请求连接
@@ -184,6 +208,7 @@ function newApp (name) {
         prevView: null,
 
         end: function () {
+          _thisApp.state = 'complete';
           req._end = true;
           if(this.prevView != null) {
             this.prevView.remove()
@@ -197,7 +222,12 @@ function newApp (name) {
 
       next();
 
-      function next () {
+      if (!__purple.startable){
+        __purple.startable = true;
+        readyStart();
+      }
+
+      function next (err) {
         if (!req._end) {
           if (flow.length > 0) {
             flow.shift()(req, res, next)
@@ -260,91 +290,36 @@ function newApp (name) {
 
 
 /**
- * Ready? start!
- * @api public
+ * 获取被点击a标签的链接
+ * @param event
+ * @returns href
  */
-function readyStart() {
+function getanchorhref(event){
 
-  /**
-   * Start after document loaded.
-   */
-
-  if (document.readyState == "complete"){
-    start();
-  } else {
-
-    document.onreadystatechange = function () {
-      if (document.readyState == "complete") {
-        document.onreadystatechange = null;
-        start();
-      }
-    };
-
-  }
-
-  /**
-   * Start.
-   *
-   * @api private
-   */
-  function start(){
-    for(var i =0; i<__purple.startup.length; i++){
-      __purple.startup[i]();
-    }
-  }
-
-}
-
-
-
-
-/**
- * Event handle for popstate changed.
- * @api private
- */
-function eventPopstate() {
-  var href = location.href;
-  purple().go(href, 'replace')
-}
-
-/**
- * Event handle for click tag `A`.
- * @param {object} event
- * @api private
- */
-function eventClickAnchor(event) {
-  var href = findClosestAnchorHref(event.target);
+  // onanchorclick
+  var href = null;
+  r(event.target);
   if (href !== null) {
     event.preventDefault();
-    purple().go(href)
   }
+
+  return href;
 
   /**
    * Find closest anchor href.
    * @param dom
-   * @returns {dom}
    * @api private
    */
-  function findClosestAnchorHref(dom) {
-    var href = null;
-    r(dom);
-    return href;
-
-    /**
-     * R.
-     * @param dom
-     */
-    function r(dom) {
-      if (dom == null) {
-        href = null
-      } else if (dom.nodeName == 'A') {
-        href = dom.href || null
-      } else  {
-        r(dom.parentNode)
-      }
+  function r(dom) {
+    if (dom == null) {
+      href = null
+    } else if (dom.nodeName == 'A') {
+      href = dom.href || null
+    } else  {
+      r(dom.parentNode)
     }
-
   }
+
 
 }
 
@@ -506,6 +481,10 @@ function indexOf(arr, value, fromIndex) {
   return arr.indexOf(value, fromIndex)
 }
 
+/**
+ * Extend multi objects.
+ * @returns {object}
+ */
 function extend() {
   var result = {};
   var objs = Array.prototype.slice.call(arguments,0);
@@ -517,7 +496,29 @@ function extend() {
     }
   });
   return result;
-};;
+}
+
+
+/**
+ * Ready? start!
+ * @api public
+ */
+function ready(start) {
+  /**
+   * Start after document loaded.
+   */
+  if (document.readyState == "complete"){
+    start();
+  } else {
+    document.onreadystatechange = function () {
+      if (document.readyState == "complete") {
+        document.onreadystatechange = null;
+        start();
+      }
+    };
+  }
+}
+;
   return purple;
 
 
