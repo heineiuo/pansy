@@ -2,10 +2,10 @@
 
   if ( typeof define === "function" && define.amd ) {
     define(function () {
-      return factory(global)
+      return factory()
     })
   } else {
-    global.purple = factory(global)
+    global.purple = factory()
   }
 
-  function factory(global) {
+  function factory() {

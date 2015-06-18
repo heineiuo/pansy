@@ -27,6 +27,8 @@ module.exports = function(grunt) {
 
         uglify: {
             options: {
+                drop_console: true,
+                drop_debugger: true,
                 banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
             },
             dist: {
