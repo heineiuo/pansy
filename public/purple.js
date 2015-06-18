@@ -1,4 +1,4 @@
-/*! PURPLE.js v0.6.0-SNAPSHOT 2015-06-12 */
+/*! PURPLE.js v0.6.0-SNAPSHOT 2015-06-14 */
 (function (global) {
 
   if ( typeof define === "function" && define.amd ) {
@@ -195,6 +195,10 @@ function newApp (name) {
      */
     go: function(href, type){
 
+      if (href == null) {
+        return false;
+      }
+
       var _thisApp = this;
       if (_thisApp.state == 'pending') {
         return false;
@@ -228,11 +232,6 @@ function newApp (name) {
 
       next();
 
-      if (!__purple.startable){
-        __purple.startable = true;
-        readyStart();
-      }
-
       function next (err) {
         if (!req._end) {
           if (flow.length > 0) {
@@ -249,9 +248,10 @@ function newApp (name) {
       function findRoute(req, res, next) {
         if (req.historyStateType == 'replace') {
           history.replaceState('data', 'title', req.parsedURL)
-        } else {
+        } else if (req.historyStateType == 'push') {
           history.pushState('data', 'title', req.parsedURL)
         }
+
         debug(null, '正在解析地址：'+req.rawUrl);
 
         // 判断href是否合法
@@ -281,7 +281,7 @@ function newApp (name) {
     },
 
     /**
-     * History back.
+     * History Back.
      */
     back: function(){
       // 后退一步
@@ -374,7 +374,7 @@ function parseurl(url) {
     pathname: ppx.replace(/^([^\/])/,'/$1'),
 
     // pathnames array
-    pathnames: arrayClean(a.pathname.replace(/^\//,'').split('/'),''),
+    pathnames: clean(a.pathname.replace(/^\//,'').split('/'),''),
 
     // search string
     search: a.search,
@@ -396,7 +396,7 @@ function parseurl(url) {
      * hash字符串+关联数组
      */
     hash: a.hash.replace('#',''),
-    hashes: arrayClean(a.hash.replace(/^(#)*/i,'').replace(/^\//,'').split('/'),''),
+    hashes: clean(a.hash.replace(/^(#)*/i,'').replace(/^\//,'').split('/'),''),
 
     file: (a.pathname.match(/\/([^\/?#]+)$/i) || [,''])[1]
   };
@@ -523,6 +523,23 @@ function ready(start) {
       }
     };
   }
+}
+
+
+/**
+ * Clean.
+ * @param arr
+ * @param del
+ * @returns {Array}
+ */
+function clean(arr, del) {
+  var result = [];
+  arr.forEach(function(value){
+    if (value !== del){
+      result.push(value)
+    }
+  });
+  return result;
 }
 ;
   return purple;

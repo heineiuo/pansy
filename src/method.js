@@ -75,3 +75,20 @@ function ready(start) {
     };
   }
 }
+
+
+/**
+ * Clean.
+ * @param arr
+ * @param del
+ * @returns {Array}
+ */
+function clean(arr, del) {
+  var result = [];
+  arr.forEach(function(value){
+    if (value !== del){
+      result.push(value)
+    }
+  });
+  return result;
+}
