@@ -3,9 +3,7 @@
  * @api private
  */
 var __purple = {
-  app: {
-    __anonymous: {}
-  }
+  app: {}
 };
 
 /**
@@ -17,29 +15,27 @@ var __purple = {
  */
 function purple (name, conf) {
 
-  // 如果没传入name，返回匿名app
+  // 如果没传入name，指向匿名app
   if (arguments.length === 0 ) {
-    if (typeof __purple.app.__anonymous == 'undefined') {
-      console.log('返回匿名app')
-      return __purple.app.__anonymous = newApp('__anonymous')
+    console.warn('未传入参数。当前指向匿名app！')
+    name = '__anonymous';
+  }
+
+  // 检查是否需要创建app
+  if (isDefined(__purple.app[name])) {
+    var _thisApp = __purple.app[name];
+
+    if (typeof conf === 'object') {
+      console.log('更新app：'+name)
+      var _conf = extend(_thisApp.conf, conf);
+      _thisApp.set(_conf);
     }
-    // 否则，返回已建立的app，或者建立app
+    console.log('返回app：'+ name);
+    return _thisApp
+
   } else {
-
-    if (isDefined(__purple.app[name])) {
-      var _thisApp = __purple.app[name];
-
-      if (typeof conf === 'object') {
-        console.log('更新app：'+name)
-        var _conf = extend(_thisApp.conf, conf);
-        _thisApp.set(_conf);
-      }
-      console.log('返回app：'+ name);
-      return _thisApp
-    } else {
-      console.log('生成新app: '+ name);
-      return newApp(name, conf)
-    }
+    console.log('生成新app: '+ name);
+    return newApp(name, conf)
   }
 
 }
