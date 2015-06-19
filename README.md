@@ -31,10 +31,9 @@ But if you need to do something more with purple, you can use middlewires, which
 * <code>[app.route(regex|string).get(stack)]()</code>
 * <code>[app.set(name, content)]()</code>
 * <code>[app.go(url)]()</code>
-* <code>[app.back()]()</code>
 * <code>[app.use(middleware)]()</code>
-* <code>[app.listen()]()</code>
 * <code>[res.end()]()</code>
+* <code>[res.redirect()]()</code> // todo
 
 
 #### purple
