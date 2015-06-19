@@ -16,12 +16,14 @@ But if you need to do something more with purple, you can use middlewires, which
 
     <script src="purple.js"></script>
 
-    purple('main')
-    .route('/').get(function(req, res){
-        alert('hello world!')
+    var app = purple('main')
+
+    app.route('/hi').get(function(req, res){
+        alert('hi! '+req.searches.name)
         res.end()
     })
-    .go('/')
+
+    app.go('/hi?name=Jack')
 
 ### Programmatic API
 

@@ -141,7 +141,7 @@ function newApp (name, conf) {
      * @api public
      */
     use: function (fn) {
-      app.middleware.push(fn)
+      this.middleware.push(fn)
     },
 
 
@@ -155,6 +155,7 @@ function newApp (name, conf) {
     route: function(rawHref) {
       // 判断href是否合法
       var href;
+      var _thisApp = this;
 
       if (isArray(rawHref)) {
         href = new RegExp('^\/'+rawHref.join('\/')+'\/$')
@@ -167,7 +168,7 @@ function newApp (name, conf) {
         return false
       }
 
-      var appHref = app.list[href] = {
+      var appHref = _thisApp.list[href] = {
         regexp: href,
         get: function () {
           appHref.fns = Array.prototype.slice.call(arguments,0)
@@ -223,7 +224,7 @@ function newApp (name, conf) {
       };
 
       // 使用中间件
-      var flow = [findRoute].concat(app.middleware);
+      var flow = [findRoute].concat(_thisApp.middleware);
 
       next();
 
@@ -251,11 +252,11 @@ function newApp (name, conf) {
 
         // 判断href是否合法
         // 判断href是否在list中
-        for(var key in app.list) {
-          if (app.list.hasOwnProperty(key)) {
-            if (app.list[key].regexp.test(req.pathname)) {
-              console.log('解析路由成功：'+app.list[key].regexp);
-              flow = flow.concat(app.list[key].fns);
+        for(var key in _thisApp.list) {
+          if (_thisApp.list.hasOwnProperty(key)) {
+            if (_thisApp.list[key].regexp.test(req.pathname)) {
+              console.log('解析路由成功：'+_thisApp.list[key].regexp);
+              flow = flow.concat(_thisApp.list[key].fns);
               return next()
             }
           }
