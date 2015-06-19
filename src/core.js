@@ -202,7 +202,7 @@ function newApp (name, conf) {
           if(this.prevView != null) {
             this.prevView.remove()
           }
-          console.log('路由跳转完毕...');
+          console.log('路由跳转完毕！没有异常发生。');
         },
 
         redirect: function(href){
@@ -253,7 +253,7 @@ function newApp (name, conf) {
         /**
          * 不在filter范围内，跳转页面。
          */
-        if (!new RegExp(req.app.conf.filter).test(req.pathname)){
+        if (!new RegExp(_thisApp.conf.filter).test(req.pathname)){
           return location.replace(req.rawUrl);
         }
 
