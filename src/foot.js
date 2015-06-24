@@ -1,5 +1,4 @@
 
-  purple.parseurl = parseurl;
   return purple;
 
 

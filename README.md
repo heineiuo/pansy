@@ -90,3 +90,8 @@ But if you need to do something more with purple, you can use middlewires, which
     res.end()
 
 
+
+#### test
+    '/index.php?route=/index'.replace(new RegExp(/^\/index\.php\?route\=/), '')
+
+
