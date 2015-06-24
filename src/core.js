@@ -25,7 +25,7 @@ function purple (arg) {
     return findorCreateApp(extend({name: '__anonymous'}, arg))
   }
 
-  function findorCreateApp(argu){
+  function findorCreateApp(argu) {
     if (typeof __purple.app[argu.name] == 'undefined'){
       return createApp(argu)
     } else {
@@ -70,7 +70,7 @@ function createApp (arg) {
   var state = updateStateByConf({
     spa: false,
     complete: true,
-    prevUrl: '',
+    prevUrl: null,
     curUrl: location.href
   }, conf);
 
@@ -130,11 +130,11 @@ function createApp (arg) {
       var href;
       var _thisApp = this;
 
-      if (isArray(rawHref)) {
+      if (rawHref instanceof Array) {
         href = new RegExp('(^'+rawHref.join('$)|(^')+'$)')
-      } else if (isString(rawHref)) {
+      } else if (typeof rawHref == 'string') {
         href = new RegExp('^'+rawHref+'$')
-      } else if (isRegExp(rawHref)){
+      } else if (rawHref instanceof RegExp){
         href = rawHref
       } else {
         // todo error handle
@@ -159,11 +159,6 @@ function createApp (arg) {
      */
     go: function(href, type){
 
-      if (href == null){
-        console.warn('app.go不接受null参数')
-        return false;
-      }
-
       var _thisApp = this;
 
       if (!_thisApp.state.complete) {
@@ -180,6 +175,7 @@ function createApp (arg) {
       var res = {
 
         end: function () {
+          clearTimeout(t)
           _thisApp.state.complete = true;
           console.log('路由跳转完毕。');
         },
@@ -195,7 +191,7 @@ function createApp (arg) {
       var flow = [findRoute].concat(_thisApp.middleware)
 
       // 超时处理
-      setTimeout(function(){
+      var t = setTimeout(function(){
         console.warn('超时')
         res.end()
       }, _thisApp.conf.timeout)
@@ -251,6 +247,9 @@ function createApp (arg) {
 
         console.log('过滤后的routePath: '+routePath)
 
+        _thisApp.state.prevUrl = _thisApp.state.curUrl
+        _thisApp.state.curUrl = req.rawUrl
+
         if (_thisApp.state.spa){
           if (req.historyStateType == 'replace') {
             history.replaceState('data', 'title', req.parsedURL)
@@ -284,8 +283,6 @@ function createApp (arg) {
 
   };
 
-
-
   return __purple.app[arg.name]
 }
 
@@ -298,56 +295,102 @@ function updateStateByConf(state, conf){
 
   if (conf.spa && !state.spa){
     state.spa = true
+    //window.addEventListener('hashchange', hashChangeHandle, false);
     window.addEventListener('popstate', popstateHandle, false);
-    document.addEventListener('click', anchorclickHandle, false);
+    document.addEventListener('click', anchorClickHandle, false);
   } else if (!conf.spa && state.spa){
     state.spa = false
+    //window.removeEventListener('hashchange', hashChangeHandle, false);
     window.removeEventListener('popstate', popstateHandle, false);
-    document.removeEventListener('click', anchorclickHandle, false);
+    document.removeEventListener('click', anchorClickHandle, false);
   }
 
   return state;
 
-  function popstateHandle(){
-    purple(conf.name).go(location.href)
+  function hashChangeHandle(){
+    console.log('hashChangeHandle')
   }
 
-  function anchorclickHandle(event){
-    purple(conf.name).go(getanchorhref(event))
+  function popstateHandle(event){
+    console.log('popstateHandle')
+    checkPopChange(function(err){
+      if (err) {
+        //console.log(err)
+      } else {
+        purple(conf.name).go(location.href)
+      }
+    })
   }
 
-}
-
-/**
- * 获取被点击a标签的链接
- * @param event
- * @returns href
- */
-function getanchorhref(event){
-
-  // onanchorclick
-  var href = null;
-  r(event.target);
-  if (href !== null) {
-    event.preventDefault();
+  function anchorClickHandle(event){
+    getAnchorHref(event, function(err, href){
+      if (err) {
+        //console.log(err)
+      } else {
+        purple(conf.name).go(href)
+      }
+    })
   }
 
-  return href
+  function checkPopChange(callback){
+    var curUrl = purple(conf.name).state.curUrl
+    var newUrl = location.href
 
-  /**
-   * Find closest anchor href.
-   * @param dom
-   * @api private
-   */
-  function r(dom) {
-    if (dom == null) {
-      href = null
-    } else if (dom.nodeName == 'A') {
-      href = dom.href || null
-    } else  {
-      r(dom.parentNode)
+    var curUrlParsed = parseurl(curUrl)
+    var newUrlParsed = parseurl(newUrl)
+
+    if (curUrlParsed.pathname == newUrlParsed.pathname && curUrlParsed.search == newUrlParsed.search) {
+      callback('HASH_CHNAGED')
+    } else {
+      callback(null)
     }
   }
+
+
+  /**
+   * 获取被点击a标签的链接
+   * @param event
+   * @param callback
+   */
+  function getAnchorHref(event, callback){
+
+    var href = null;
+
+    r(event.target);
+
+    //console.log('getAnchorHref: '+href)
+
+    if (href == null) {
+      callback('HREF_NOT_FOUND')
+    } else if (href.substr(0,1) == '#'){
+      callback('HASH_MODE')
+    } else {
+      event.preventDefault();
+      callback(null, href)
+    }
+
+    /**
+     * Find closest anchor href.
+     * @param dom
+     * @api private
+     */
+    function r(dom) {
+      if (dom != document.body && dom != null) {
+        if (dom.nodeName == 'A') {
+          if (typeof dom.attributes.href == 'undefined'){
+            href = null
+          } else {
+            href = dom.attributes.href.value
+          }
+        } else {
+          r(dom.parentNode)
+        }
+      }
+    }
+
+
+  }
+
 
 
 }
@@ -459,4 +502,3 @@ function parseurl(url) {
 
   return result
 }
-

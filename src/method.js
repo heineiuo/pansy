@@ -1,19 +1,3 @@
-function isDefined(arg) {
-  return typeof arg != 'undefined'
-}
-
-function isString(arg) {
-  return typeof arg == 'string'
-}
-
-function isArray(arg) {
-  return arg instanceof Array
-}
-
-function isRegExp(arg) {
-  return arg instanceof RegExp
-}
-
 function isEmpty(obj) {
   for(var prop in obj) {
     if(obj.hasOwnProperty(prop))
@@ -54,28 +38,6 @@ function extend() {
   });
   return result;
 }
-
-
-/**
- * Ready? start!
- * @api public
- */
-function ready(start) {
-  /**
-   * Start after document loaded.
-   */
-  if (document.readyState == "complete"){
-    start();
-  } else {
-    document.onreadystatechange = function () {
-      if (document.readyState == "complete") {
-        document.onreadystatechange = null;
-        start();
-      }
-    };
-  }
-}
-
 
 /**
  * Clean.
