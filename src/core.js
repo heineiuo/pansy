@@ -168,6 +168,7 @@ function createApp (arg) {
       _thisApp.state.complete = false;
 
       var req = extend(parseurl(href), {
+        prevUrl: _thisApp.state.curUrl,
         rawUrl: href, // 原始请求连接
         historyStateType: type || 'push' // 堆栈方式
       });
@@ -226,29 +227,33 @@ function createApp (arg) {
         var notfound = true
         var mathResult = routePath.match(_thisApp.conf.filter.pathname)
         if (mathResult){
-          routePath = routePath.substr(Object(mathResult[0]).length)
+
+          if (typeof _thisApp.conf.filter.search != 'undefined'){
+            console.log('路由模式切换为使用searches参数:'+_thisApp.conf.filter.search)
+
+            /**
+             * 开启使用参数模式做跳转
+             * 使用search做路由的前提是要满足pathname过滤规则
+             */
+            var search = _thisApp.conf.filter.search
+            if (typeof req.searches[search] != 'undefined' && req.searches[search] != ''){
+              routePath = req.searches[search]
+            } else {
+              routePath = '/'
+            }
+          } else {
+            routePath = req.pathname.substr(Object(mathResult[0]).length)
+          }
+
         } else {
           console.warn('routePath不符合pathname过滤规则，浏览器重定向到请求网址')
           location.replace(req.rawUrl)
         }
 
-        if (typeof _thisApp.conf.filter.search != 'undefined'){
-          /**
-           * 开启使用参数模式做跳转
-           * 使用search做路由的前提是要满足pathname过滤规则
-           */
-          var search = _thisApp.conf.filter.search
-          if (typeof req.searches[search] != 'undefined' && req.searches[search] != ''){
-            routePath = req.searches[search]
-          } else {
-            routePath = '/'
-          }
-        }
-
         console.log('过滤后的routePath: '+routePath)
 
         _thisApp.state.prevUrl = _thisApp.state.curUrl
-        _thisApp.state.curUrl = req.rawUrl
+        _thisApp.state.curUrl = req.parsedUrl
 
         if (_thisApp.state.spa){
           if (req.historyStateType == 'replace') {
