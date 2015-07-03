@@ -79,6 +79,7 @@ function createApp (arg) {
     // 配置
     conf: conf,
 
+
     // 状态
     state: state,
 
