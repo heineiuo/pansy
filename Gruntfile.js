@@ -6,13 +6,14 @@ module.exports = function(grunt) {
         pkg: grunt.file.readJSON('package.json'),
 
         concat: {
+
             js: {
                 options: {
                     separator: ';',
                     banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
                 },
                 files: {
-                    'lib/purple.js': [
+                    'tmp/purple-<%= pkg.version %>.js': [
                         "src/head.js",
                         "src/core.js",
                         "src/render.js",
@@ -21,6 +22,7 @@ module.exports = function(grunt) {
                         "src/dom-enhance.js",
                         "src/foot.js"
                     ]
+
                 }
             }
         },
@@ -33,41 +35,14 @@ module.exports = function(grunt) {
             },
             dist: {
                 files: {
-                    'lib/purple.min.js': ['lib/purple.js']
-                }
-            }
-        },
-
-        copy: {
-            options: {},
-            dist: {
-                files: {
-                    'public/purple.js': ['lib/purple.js']
-                }
-            }
-        },
-
-
-        qunit: {
-            files: ['test/**/*.html']
-        },
-
-        jshint: {
-            files: ['Gruntfile.js', 'lib/purple.js'],
-            options: {
-                // options here to override JSHint defaults
-                globals: {
-                    jQuery: true,
-                    console: true,
-                    module: true,
-                    document: true
+                    'tmp/purple-<%= pkg.version %>.min.js': ['tmp/purple-<%= pkg.version %>.js']
                 }
             }
         },
 
         watch: {
             files: ['Gruntfile.js', 'src/**/*.js'],
-            tasks: ['concat', 'uglify', 'copy']
+            tasks: ['concat', 'uglify']
         }
 
     });
@@ -76,13 +51,5 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-contrib-copy');
-    // grunt.loadNpmTasks('grunt-contrib-jshint');
-    // grunt.loadNpmTasks('grunt-contrib-qunit');
-
-    // grunt.registerTask('test', ['jshint', 'qunit']);
-    // grunt.registerTask('default', ['jshint', 'qunit', 'concat', 'uglify']);
-
-    // grunt.registerTask('default', ['concat', 'uglify']);
 
 };
