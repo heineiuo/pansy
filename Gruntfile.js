@@ -15,11 +15,8 @@ module.exports = function(grunt) {
                 files: {
                     'tmp/purple-<%= pkg.version %>.js': [
                         "src/head.js",
+                        "src/util.js",
                         "src/core.js",
-                        "src/render.js",
-                        "src/debug.js",
-                        "src/method.js",
-                        "src/dom-enhance.js",
                         "src/foot.js"
                     ]
 
