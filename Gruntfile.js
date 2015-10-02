@@ -13,7 +13,7 @@ module.exports = function(grunt) {
                     banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
                 },
                 files: {
-                    'tmp/purple-<%= pkg.version %>.js': [
+                    '.grunt-cache/purple-<%= pkg.version %>.js': [
                         "src/head.js",
                         "src/util.js",
                         "src/core.js",
@@ -33,7 +33,7 @@ module.exports = function(grunt) {
                     banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
                 },
                 files: {
-                    'tmp/purple-<%= pkg.version %>.min.js': ['tmp/purple-<%= pkg.version %>.js']
+                    '.grunt-cache/purple-<%= pkg.version %>.min.js': ['.grunt-cache/purple-<%= pkg.version %>.js']
                 }
             },
 
@@ -42,7 +42,7 @@ module.exports = function(grunt) {
                     banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
                 },
                 files: {
-                    'tmp/purple-<%= pkg.version %>.debug.min.js': ['tmp/purple-<%= pkg.version %>.js']
+                    '.grunt-cache/purple-<%= pkg.version %>.debug.min.js': ['.grunt-cache/purple-<%= pkg.version %>.js']
                 }
             }
         },

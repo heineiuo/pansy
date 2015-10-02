@@ -1,11 +1,7 @@
 {
   "name": "purple.js",
   "author": "http://github.com/heineiuo",
-<<<<<<< HEAD
-  "version": "0.6.1.SNAPSHOT",
-=======
-  "version": "0.6.0",
->>>>>>> update:2
+  "version": "0.7.0-alpha",
   "description": "A simple router, and flexible controller.",
   "devDependencies": {
     "grunt": "latest",
@@ -13,28 +9,10 @@
     "grunt-contrib-concat": "latest",
     "grunt-contrib-watch": "latest",
     "grunt-contrib-copy": "latest",
-    "grunt-contrib-compress": "latest",
-    "express": "~4.10.1",
-    "express-session": "~1.9.1",
-    "body-parser": "~1.9.0",
-    "cookie-parser": "~1.3.2",
-    "compression": "~1.2.0",
-    "method-override": "~2.3.0",
-    "morgan": "~1.4.1",
-    "connect-mongo": "~0.4.1",
-    "connect-flash": "~0.1.1",
-    "helmet": "~0.5.0",
-    "consolidate": "~0.10.0",
-    "swig": "~1.4.1",
-    "less-middleware": "~2.0.1",
-    "lodash": "latest",
-    "glob": "latest",
-    "async": "latest"
+    "grunt-contrib-compress": "latest"
   },
-
   "repository": {
     "type": "git",
     "url": "git@github.com:heineiuo/purple.git"
   }
-
 }
