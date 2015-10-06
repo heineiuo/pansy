@@ -9,7 +9,7 @@
     "grunt-contrib-concat": "latest",
     "grunt-contrib-watch": "latest",
     "grunt-contrib-copy": "latest",
-    "grunt-contrib-compress": "latest"
+    "grunt-contrib-clean": "latest"
   },
   "repository": {
     "type": "git",
