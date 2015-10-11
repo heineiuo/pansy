@@ -35,6 +35,7 @@ module.exports = function(grunt) {
                     banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
                 },
                 files: {
+                    // 'dist/purple-0.6.0.min.js': ['dist/purple-0.6.0.debug.min.js'],
                     '.grunt-cache/purple-<%= pkg.version %>.min.js': ['.grunt-cache/purple-<%= pkg.version %>.js']
                 }
             },
