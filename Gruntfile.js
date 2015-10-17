@@ -9,17 +9,19 @@ module.exports = function(grunt) {
 
             js: {
                 options: {
-                    separator: ';',
+                    separator: ';\n',
                     banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
                 },
                 files: {
                     '.grunt-cache/purple-<%= pkg.version %>.js': [
-                        "src/head.js",
-                        "src/util.js",
+                        "src/wrap/wrap.head",
+                        "src/middleware/**/*.js",
+                        "src/util/**/*.js",
                         "src/core.js",
-                        "src/foot.js"
+                        "src/Router.js",
+                        "src/Controller.js",
+                        "src/wrap/wrap.foot"
                     ]
-
                 }
             }
         },
@@ -32,10 +34,10 @@ module.exports = function(grunt) {
                         drop_debugger: true,
                         drop_console: true
                     },
+                    //mangleProperties: true,
                     banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
                 },
                 files: {
-                    // 'dist/purple-0.6.0.min.js': ['dist/purple-0.6.0.debug.min.js'],
                     '.grunt-cache/purple-<%= pkg.version %>.min.js': ['.grunt-cache/purple-<%= pkg.version %>.js']
                 }
             },
@@ -55,6 +57,7 @@ module.exports = function(grunt) {
             //options: {},
             main: {
                 files: {
+                    'dist/purple-<%= pkg.version %>.js': ['.grunt-cache/purple-<%= pkg.version %>.js'],
                     'dist/purple-<%= pkg.version %>.min.js': ['.grunt-cache/purple-<%= pkg.version %>.min.js'],
                     'dist/purple-<%= pkg.version %>.debug.min.js': ['.grunt-cache/purple-<%= pkg.version %>.debug.min.js']
                 }
