@@ -1,7 +1,7 @@
 {
   "name": "purple.js",
   "author": "http://github.com/heineiuo",
-  "version": "0.6.0",
+  "version": "0.6.1-alpha",
   "description": "A simple router, and flexible controller.",
   "devDependencies": {
     "grunt": "latest",
