@@ -1,4 +1,4 @@
-/*! PURPLE.js v0.7.0-alpha 2015-10-14 */
+/*! PURPLE.js v0.7.0-alpha 2015-10-17 */
 (function (global) {
 
   if ( typeof define === "function" && define.amd ) {
@@ -19,11 +19,11 @@
 
 function anchor(req, res, next){
 
-  if (typeof this.isstarted != 'undefined'){
+  if (typeof this.disabled != 'undefined'){
     next()
   }
 
-  this.isstarted = true
+  this.disabled = true
 
   document.addEventListener('click', anchorClickHandle, false);
 
@@ -79,29 +79,14 @@ function anchor(req, res, next){
 }
 ;
 
-function error404(req, res){
-  // todo 404
-  res.end()
-}
-;
-
-function error500 (err, req, res, next){
-  if (!err){
-    next()
-  } else {
-    console.error(err)
-    res.end()
-  }
-};
-
 
 function popstate(req, res, next) {
 
-  if (typeof this.isstarted != 'undefined'){
+  if (typeof this.disabled != 'undefined'){
     next()
   }
 
-  this.isstarted = true
+  this.disabled = true
 
   window.addEventListener('popstate', popstateHandle, false);
 
@@ -132,87 +117,18 @@ function popstate(req, res, next) {
 
 }
 ;
-function checkroute(parsedurl){
-
-
-
-
-  return false
-
-}
-
-
-
-/**
- * 查找路由器
- */
-function findRoute(req, res, next) {
-  console.log('正在解析地址：'+req.rawUrl);
-
-  /**
-   * 不在filter范围内，跳转页面。
-   */
-  var routePath = req.parsedUrl
-  var notfound = true
-  var mathResult = routePath.match(_thisApp.conf.filter.pathname)
-  if (mathResult){
-
-    if (typeof _thisApp.conf.filter.search != 'undefined'){
-      console.log('路由模式切换为使用searches参数:'+_thisApp.conf.filter.search)
-
-      /**
-       * 开启使用参数模式做跳转
-       * 使用search做路由的前提是要满足pathname过滤规则
-       */
-      var search = _thisApp.conf.filter.search
-      if (typeof req.searches[search] != 'undefined' && req.searches[search] != ''){
-        routePath = req.searches[search]
-      } else {
-        routePath = '/'
-      }
-    } else {
-      routePath = req.pathname.substr(Object(mathResult[0]).length)
-    }
-
-  } else {
-    console.warn('routePath不符合pathname过滤规则，浏览器重定向到请求网址')
-    location.replace(req.rawUrl)
-  }
-
-  console.log('过滤后的routePath: '+routePath)
-
-  _thisApp.state.prevUrl = _thisApp.state.curUrl
-  _thisApp.state.curUrl = req.parsedUrl
-
-  if (_thisApp.state.spa){
-    if (req.historyStateType == 'replace') {
-      history.replaceState('data', 'title', req.parsedURL)
-    } else  {
-      history.pushState('data', 'title', req.parsedURL)
-    }
-  }
-
-
-  // 判断href是否合法
-  // 判断href是否在list中
-  for(var key in _thisApp.list) {
-    if (_thisApp.list.hasOwnProperty(key)) {
-      if (_thisApp.list[key].regexp.test(routePath)) {
-        console.log('解析路由成功：'+_thisApp.list[key].regexp);
-        flow = flow.concat(_thisApp.middleware, _thisApp.list[key].fns);
-        notfound = false
-        return next()
-      }
-    }
-  }
-
-  if (notfound){
-    console.warn('该地址无法解析：' + req.rawUrl);
-    _thisApp.conf.notFoundHandle(req, res);
-  }
-
-}
 ;
+function errHandleChecker(fn){
+  try{
+    return fn.toString().match(/[a-z,(\s]*\)/)[0].split(',').length == 4
+  } catch(e){
+    return false
+  }
+};
+function initChecker(){
+
+
+};
 
 /**
  * URL 解析
@@ -261,11 +177,12 @@ function parseurl(url) {
     // pathnames array
     pathnames: clean(a.pathname.replace(/^\//,'').split('/'),''),
 
+
     // search string
     search: a.search,
 
     // searches  key-value
-    searches: (function(){
+    query: (function(){
       var ret = {},
         seg = a.search.replace(/^\?/,'').split('&'),
         len = seg.length, i = 0, s;
@@ -315,30 +232,111 @@ function parseurl(url) {
     }
   }
 
-
-  result.parsedURL = parsedURL;
-  result.parsedUrl = parsedURL;
+  result.params = result.pathnames
+  result.parsedURL = parsedURL
+  result.parsedUrl = parsedURL
 
   return result
 };
-/**
- * forEach
- */
-if (!Array.prototype.forEach) {
-  Array.prototype.forEach = function(fun) {
-    var len = this.length
-    if (typeof fun != "function"){
-      throw new TypeError()
-    }
-    var thisp = arguments[1];
-    for (var i = 0; i < len; i++) {
-      if (i in this) {
-        fun.call(thisp, this[i], i, this)
+function routeChecker(req, path){
+
+
+
+
+  /**
+   * 查找路由器
+   */
+  function findRoute(req, res, next) {
+
+    console.log('正在解析地址：'+req.rawUrl);
+
+    /**
+     * 不在filter范围内，跳转页面。
+     */
+    var routePath = req.parsedUrl
+    var notfound = true
+    var mathResult = routePath.match(_thisApp.conf.filter.pathname)
+    if (mathResult){
+
+      if (typeof _thisApp.conf.filter.search != 'undefined'){
+        console.log('路由模式切换为使用searches参数:'+_thisApp.conf.filter.search)
+
+        /**
+         * 开启使用参数模式做跳转
+         * 使用search做路由的前提是要满足pathname过滤规则
+         */
+        var search = _thisApp.conf.filter.search
+        if (typeof req.searches[search] != 'undefined' && req.searches[search] != ''){
+          routePath = req.searches[search]
+        } else {
+          routePath = '/'
+        }
+      } else {
+        routePath = req.pathname.substr(Object(mathResult[0]).length)
       }
+
+    } else {
+      console.warn('routePath不符合pathname过滤规则，浏览器重定向到请求网址')
+      location.replace(req.rawUrl)
+    }
+
+    console.log('过滤后的routePath: '+routePath)
+
+    _thisApp.state.prevUrl = _thisApp.state.curUrl
+    _thisApp.state.curUrl = req.parsedUrl
+
+    if (_thisApp.state.spa){
+      if (req.historyStateType == 'replace') {
+        history.replaceState('data', 'title', req.parsedURL)
+      } else  {
+        history.pushState('data', 'title', req.parsedURL)
+      }
+    }
+
+    // 判断href是否合法
+    // 判断href是否在list中
+    for(var key in _thisApp.list) {
+      if (_thisApp.list.hasOwnProperty(key)) {
+        if (_thisApp.list[key].regexp.test(routePath)) {
+          console.log('解析路由成功：'+_thisApp.list[key].regexp);
+          flow = flow.concat(_thisApp.middleware, _thisApp.list[key].fns);
+          notfound = false
+          return next()
+        }
+      }
+    }
+
+    if (notfound){
+      console.warn('该地址无法解析：' + req.rawUrl);
+      _thisApp.conf.notFoundHandle(req, res);
+    }
+
+  }
+
+}
+;
+/**
+ * forEach arr and callback(item, index)
+ * @param arr
+ * @param fn
+ */
+function forEach(arr, fn){
+  var len = arr.length
+  if (typeof fn != "function"){
+    throw new TypeError()
+  }
+  for (var i = 0; i < len; i++) {
+    if (i in arr) {
+      fn.call(arguments[1], arr[i], i, arr)
     }
   }
 }
 
+/**
+ * check empty object
+ * @param obj
+ * @returns {boolean}
+ */
 function isEmpty(obj) {
   for(var prop in obj) {
     if(obj.hasOwnProperty(prop))
@@ -347,6 +345,12 @@ function isEmpty(obj) {
   return true;
 }
 
+/**
+ * map objects and callback(item, index)
+ * @param obj
+ * @param callback
+ * @returns {{}}
+ */
 function map(obj, callback) {
   var result = {};
   for (var key in obj) {
@@ -359,6 +363,13 @@ function map(obj, callback) {
   return result;
 }
 
+/**
+ * findout item's index in arr
+ * @param arr
+ * @param value
+ * @param fromIndex
+ * @returns {*}
+ */
 function indexOf(arr, value, fromIndex) {
   return arr.indexOf(value, fromIndex)
 }
@@ -370,7 +381,7 @@ function indexOf(arr, value, fromIndex) {
 function extend() {
   var result = {};
   var objs = Array.prototype.slice.call(arguments,0);
-  objs.forEach(function(props, index){
+  forEach(objs, function(props, index){
     for(var prop in props) {
       if(props.hasOwnProperty(prop)) {
         result[prop] = props[prop]
@@ -388,139 +399,231 @@ function extend() {
  */
 function clean(arr, del) {
   var result = [];
-  arr.forEach(function(value){
+  forEach(arr, function(value){
     if (value !== del){
       result.push(value)
     }
   });
   return result;
-}
-;
+};
 /**
  * Create or return an App.
  *
  * @param arg
  * @returns {*}
  */
+var __app = {
+  init: false
+}
+
 function purple () {
 
-  var __purple = this;
-  var __app = {
+  if (__app.init) return __app.app
 
-    // 配置
-    __conf: {
-      filter: {
-        //pathname: '',
-        //search: ''
-      },
-      timeout: 45000,
-      routeByQuery: false,
-      routeQuery: null
-    },
+  // 配置
+  __app.conf= {
+    timeout: 60000, // 一分钟
+    routeByQuery: false,
+    routeQuery: null,
+    routeScope: ''
+  }
 
-    // 状态
-    __state: {
-      spa: false,
-      complete: true,
-      prevUrl: null,
-      curUrl: location.href
-    },
+  // 状态
+  __app.state = {
+    spa: false,
+    complete: true,
+    prevUrl: null,
+    curUrl: location.href,
+    errorStack: null
+  }
 
-    // 路由集合
-    __stack: {},
 
-    /**
-     * Set app config.
-     */
-    set: function(name, value) {
-      this.__conf[name] = value
-    },
+  // 中间件集合
+  __app.stack = []
 
-    /**
-     * Add middleware for app.
-     * @param {function} fn
-     * @api public
-     */
-    use: function (fn) {
 
-      var __app = this
+  // 返回app及接口
+  __app.app = {}
 
-      if (typeof fn === 'function'){
-        __app.__stack.push(fn)
-      } else if (fn instanceof Array){
-        __app.__stack.push(fn)
-      }
+  /**
+   * Set app config.
+   */
+  __app.app.set = function(name, value) {
+    __app.conf[name] = value
+  }
 
-    },
+  __app.app.get = function(name) {
+    if (typeof name != 'undefined') {
+      return __app.conf[name]
+    }
+    return __app.conf
+  }
 
-    /**
-     * Core method. Change the route state.
-     * @param {string} href
-     * @param {string} type
-     * @api public
-     */
-    go: function(href, type){
+  /**
+   * Add middleware for app.
+   * @param path
+   * @param fn
+   * @api public
+   */
+  __app.app.use = function () {
 
-      if (!this.__state.complete) return false
-      this.__state.complete = false
+    if (arguments.length == 1){
 
-      var __app = this;
-
-      // 超时处理
-      var t = setTimeout(function(){
-        console.warn('超时')
-        res.end()
-      }, __app.conf.timeout)
-
-      // 封装请求
-      var req = extend(parseurl(href), {
-        prevUrl: __app.__state.curUrl,
-        rawUrl: href, // 原始请求连接
-        historyStateType: type || 'push' // 堆栈方式
-      });
-
-      // 封装响应处理
-      var res = {
-        end: function () {
-          clearTimeout(t)
-          __app.__state.complete = true;
-          console.log('路由跳转完毕。');
-        },
-
-        redirect: function(href){
-          this.end();
-          __app.go(href);
-        }
-      };
-
-      // 流程控制
-      var next = function (err) {
-        // 获取指针
-        if(typeof err != 'undefined' && err != null){
-          __app.conf.exceptionHandler(err, req, res, next)
-        } else if (!__app.__state.complete) {
-          if (flow.length > 0) {
-            flow.shift()(req, res, next)
+      if ( typeof arguments[0] === 'function'){
+        var fn = arguments[0]
+        fn.isErrorHandle = errHandleChecker(fn)
+        __app.stack.push(fn)
+      } else if (arguments[0] instanceof Array) {
+        var arr = arguments[0]
+        map(arr, function(item, index){
+          if (typeof item === 'function'){
+            __app.app.use(item)
+          } else if (item instanceof Array && item.length ==2) {
+            __app.app.use(item[0], item[1])
           } else {
-            res.end()
+            console.warn('use参数有误')
           }
+        })
+      } else if (arguments[0] instanceof Object) {
+        if (arguments[0].__stack instanceof Array) {
+          __app.app.use(arguments[0].__stack)
+        } else {
+          console.warn('use参数有误')
         }
+      } else {
+        console.warn('use参数有误')
+      }
+    } else if (arguments.length == 2 ) {
+
+      var path = arguments[0]
+      var fn = arguments[1]
+
+      if (path instanceof Array) {
+        path = new RegExp('(^'+path.join('$)|(^')+'$)')
+      } else if (typeof path == 'string') {
+        path = new RegExp('^'+path+'$')
       }
 
-      /**
-       * 开始执行
-       */
-      next();
+      if (!path instanceof RegExp) {
+        console.error('route参数错误: '+path)
+      }
+
+      fn.path = path
+      fn.isErrorHandle = errHandleChecker(fn)
+      __app.stack.push(fn)
 
     }
 
-  };
+  }
 
-  return __app
+  /**
+   * Core method. Change the route state.
+   * @param {string} href
+   * @param {string} type
+   * @api public
+   */
+  __app.app.go = function(rawUrl, type){
 
-}
-;
+    if (!__app.state.complete) return false
+    __app.state.complete = false
 
+
+    /**
+     * 封装请求
+     */
+    var req = extend(parseurl(rawUrl), {
+      routed: false,
+      expire: Date.now() + __app.conf.timeout,
+      conf: __app.conf,
+      state: __app.state,
+      rawUrl: rawUrl, // 原始请求连接
+      historyStateType: type || 'push' // 堆栈方式,默认是push
+    })
+
+    /**
+     * 封装响应处理
+     */
+    var res = {
+      end: function () {
+        __app.state.complete = true;
+        __app.state.errorStack = null;
+        console.log('路由跳转完毕。')
+      },
+
+      redirect: function(href){
+        this.end();
+        __app.app.go(href, 'replace')
+      }
+    }
+
+    /**
+     * 流程控制
+     */
+    var index = -1;
+    var next = function (err) {
+      index ++
+
+      // 错误栈
+      if (typeof err != 'undefined'){
+        if (!__app.state.errorStack){
+          __app.state.errorStack = []
+        }
+        __app.state.errorStack.push(err)
+      }
+
+
+
+      // 检查指针
+      if(index >= __app.stack.length) {
+        // 错误检查
+        if (__app.state.errorStack){
+          console.error(__app.state.errorStack)
+        }
+        // 404 检查
+        if (!req.routed){
+          console.error('404 not found')
+        }
+        res.end()
+      } else {
+        // 检查失效层
+        if (typeof __app.stack[index].disabled != 'undefined'){
+          next()
+        } else {
+          // 检查路由
+          if (typeof __app.stack[index].path != 'undefined') {
+            if (!routeChecker(__app.stack[index].path)){
+              // 不匹配
+              next()
+            } else {
+              req.routed = true
+              errCheck()
+            }
+          } else {
+            errCheck()
+          }
+          // 区分错误处理层
+          function errCheck(){
+            if (typeof __app.stack[index].isErrorHandle != 'undefined') {
+              __app.stack[index](__app.state.errorStack, req, res, next)
+            } else {
+              __app.stack[index](req, res, next)
+            }
+          }
+        }
+      }
+    }
+
+    /**
+     * 开始执行
+     */
+    next()
+
+  }
+
+  __app.init = true
+
+  return __app.app
+};
 purple.Router = function(){
 
   var __stack = []
@@ -531,32 +634,18 @@ purple.Router = function(){
       __stack.push(fn)
     },
 
-    route: function(rawPath){
-
-      var path = rawPath
-
-      if (rawPath instanceof Array) {
-        path = new RegExp('(^'+rawPath.join('$)|(^')+'$)')
-      } else if (typeof rawPath == 'string') {
-        path = new RegExp('^'+rawPath+'$')
-      }
-
-      if (!rawPath instanceof RegExp) {
-        console.error('route参数错误: '+rawPath)
-      }
+    route: function(path){
 
       return {
         get: function(){
-          __stack.push({
-            __stack: Array.prototype.slice.call(arguments,0),
-            path: path
+          var fns = Array.prototype.slice.call(arguments,0)
+          map(fns, function(item, index){
+            __stack.push([path, item])
           })
         }
       }
-
     }
   }
-
 };
 purple.Controller = function (){
 

@@ -30,6 +30,9 @@ module.exports = function(grunt) {
         uglify: {
             min: {
                 options: {
+                    drop_debugger: true,
+                    drop_console: true,
+
                     compress: {
                         drop_debugger: true,
                         drop_console: true

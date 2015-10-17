@@ -1,11 +1,11 @@
-function routeChecker(parsedurl){
+function routeChecker(req, path){
 
-  return false
 
   /**
    * 查找路由器
    */
   function findRoute(req, res, next) {
+
     console.log('正在解析地址：'+req.rawUrl);
 
     /**
@@ -14,6 +14,11 @@ function routeChecker(parsedurl){
     var routePath = req.parsedUrl
     var notfound = true
     var mathResult = routePath.match(_thisApp.conf.filter.pathname)
+
+    _thisApp.state.prevUrl = _thisApp.state.curUrl
+    _thisApp.state.curUrl = req.parsedUrl
+
+
     if (mathResult){
 
       if (typeof _thisApp.conf.filter.search != 'undefined'){
@@ -40,9 +45,6 @@ function routeChecker(parsedurl){
 
     console.log('过滤后的routePath: '+routePath)
 
-    _thisApp.state.prevUrl = _thisApp.state.curUrl
-    _thisApp.state.curUrl = req.parsedUrl
-
     if (_thisApp.state.spa){
       if (req.historyStateType == 'replace') {
         history.replaceState('data', 'title', req.parsedURL)
@@ -50,7 +52,6 @@ function routeChecker(parsedurl){
         history.pushState('data', 'title', req.parsedURL)
       }
     }
-
 
     // 判断href是否合法
     // 判断href是否在list中

@@ -46,11 +46,12 @@ function parseurl(url) {
     // pathnames array
     pathnames: clean(a.pathname.replace(/^\//,'').split('/'),''),
 
+
     // search string
     search: a.search,
 
     // searches  key-value
-    searches: (function(){
+    query: (function(){
       var ret = {},
         seg = a.search.replace(/^\?/,'').split('&'),
         len = seg.length, i = 0, s;
@@ -100,9 +101,9 @@ function parseurl(url) {
     }
   }
 
-
-  result.parsedURL = parsedURL;
-  result.parsedUrl = parsedURL;
+  result.params = result.pathnames
+  result.parsedURL = parsedURL
+  result.parsedUrl = parsedURL
 
   return result
 }

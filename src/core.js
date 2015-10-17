@@ -12,11 +12,9 @@ function purple () {
 
   if (__app.init) return __app.app
 
-  var __purple = this
-
   // 配置
   __app.conf= {
-    timeout: 45000,
+    timeout: 60000, // 一分钟
     routeByQuery: false,
     routeQuery: null,
     routeScope: ''
@@ -28,7 +26,7 @@ function purple () {
     complete: true,
     prevUrl: null,
     curUrl: location.href,
-    errorStack: []
+    errorStack: null
   }
 
 
@@ -47,7 +45,10 @@ function purple () {
   }
 
   __app.app.get = function(name) {
-    return __app.conf[name]
+    if (typeof name != 'undefined') {
+      return __app.conf[name]
+    }
+    return __app.conf
   }
 
   /**
@@ -113,49 +114,90 @@ function purple () {
    * @param {string} type
    * @api public
    */
-  __app.app.go = function(href, type){
+  __app.app.go = function(rawUrl, type){
 
     if (!__app.state.complete) return false
     __app.state.complete = false
 
-
-    // 超时处理
-    var t = setTimeout(function(){
-      console.warn('超时')
-      res.end()
-    }, __app.conf.timeout)
-
-    // 封装请求
-    var req = extend(parseurl(href), {
-      prevUrl: __app.state.curUrl,
-      rawUrl: href, // 原始请求连接
-      historyStateType: type || 'push' // 堆栈方式
+    /**
+     * 封装请求
+     */
+    var req = extend(parseurl(rawUrl), {
+      routed: false,
+      expire: Date.now() + __app.conf.timeout,
+      conf: __app.conf,
+      state: __app.state,
+      rawUrl: rawUrl, // 原始请求连接
+      historyStateType: type || 'push' // 堆栈方式,默认是push
     })
 
-    // 封装响应处理
+    /**
+     * 封装响应处理
+     */
     var res = {
       end: function () {
-        clearTimeout(t)
         __app.state.complete = true;
+        __app.state.errorStack = null;
         console.log('路由跳转完毕。')
       },
 
       redirect: function(href){
         this.end();
-        __app.go(href, 'replace')
+        __app.app.go(href, 'replace')
       }
     }
 
-    // 流程控制
+    /**
+     * 流程控制
+     */
+    var index = -1;
     var next = function (err) {
-      // 获取指针
-      if(typeof err != 'undefined' && err != null){
-        __app.conf.exceptionHandler(err, req, res, next)
-      } else if (!__app.state.complete) {
-        if (flow.length > 0) {
-          flow.shift()(req, res, next)
+      index ++
+
+      // 错误栈
+      if (typeof err != 'undefined'){
+        if (!__app.state.errorStack){
+          __app.state.errorStack = []
+        }
+        __app.state.errorStack.push(err)
+      }
+
+      // 检查指针
+      if(index >= __app.stack.length) {
+        // 错误检查
+        if (__app.state.errorStack){
+          console.error(__app.state.errorStack)
+        }
+        // 404 检查
+        if (!req.routed){
+          console.error('404 not found')
+        }
+        res.end()
+      } else {
+        // 检查失效层
+        if (typeof __app.stack[index].disabled != 'undefined'){
+          next()
         } else {
-          res.end()
+          // 检查路由
+          if (typeof __app.stack[index].path != 'undefined') {
+            if (!routeChecker(__app.stack[index].path)){
+              // 不匹配
+              next()
+            } else {
+              req.routed = true
+              errCheck()
+            }
+          } else {
+            errCheck()
+          }
+          // 区分错误处理层
+          function errCheck(){
+            if (typeof __app.stack[index].isErrorHandle != 'undefined') {
+              __app.stack[index](__app.state.errorStack, req, res, next)
+            } else {
+              __app.stack[index](req, res, next)
+            }
+          }
         }
       }
     }
@@ -170,5 +212,4 @@ function purple () {
   __app.init = true
 
   return __app.app
-
 }

@@ -1,29 +1,9 @@
-///**
-// * forEach
-// */
-//if (!Array.prototype.forEach) {
-//  Array.prototype.forEach = function(fun) {
-//    var len = this.length
-//    if (typeof fun != "function"){
-//      throw new TypeError()
-//    }
-//    var thisp = arguments[1];
-//    for (var i = 0; i < len; i++) {
-//      if (i in this) {
-//        fun.call(thisp, this[i], i, this)
-//      }
-//    }
-//  }
-//}
-
-
 /**
  * forEach arr and callback(item, index)
  * @param arr
  * @param fn
  */
 function forEach(arr, fn){
-
   var len = arr.length
   if (typeof fn != "function"){
     throw new TypeError()

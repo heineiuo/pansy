@@ -6,11 +6,11 @@
 
 function anchor(req, res, next){
 
-  if (typeof this.isstarted != 'undefined'){
+  if (typeof this.disabled != 'undefined'){
     next()
   }
 
-  this.isstarted = true
+  this.disabled = true
 
   document.addEventListener('click', anchorClickHandle, false);
 
