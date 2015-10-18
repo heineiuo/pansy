@@ -21,7 +21,7 @@ function popstateChange(req, res, next) {
     if (curUrlParsed.pathname == newUrlParsed.pathname && curUrlParsed.search == newUrlParsed.search) {
       console.log('HASH_CHNAGED')
     } else {
-      purple(conf.name).go(location.href)
+      __app.app.go(location.href)
     }
 
   }, false);
