@@ -4,63 +4,53 @@
  * @param callback
  */
 
-function anchor(req, res, next){
+function anchorClick(req, res, next){
 
-  if (typeof this.disabled != 'undefined'){
-    next()
-  }
+  if (typeof this.disabled != 'undefined') return next()
 
   this.disabled = true
 
-  document.addEventListener('click', anchorClickHandle, false);
+  if(!__app.conf.spa) return next()
 
-  function anchorClickHandle(event){
-    getAnchorHref(event, function(err, href){
-      if (err) {
-        //console.log(err)
+  console.log('开启监听anchor点击')
+
+  document.addEventListener('click', function (event){
+
+    closestHref(event.target, function(err, href){
+      console.warn(err)
+      if (err) return false
+      if (href.substr(0,1) == '#'){
+        console.info('HASH_MODE')
       } else {
-        purple(conf.name).go(href)
+        event.preventDefault()
+        console.info('获取成功,开始跳转')
+        __app.app.go(href, 'push')
       }
     })
-  }
-
-  function getAnchorHref(event, callback){
-
-    var href = null;
-
-    r(event.target);
-
-    //console.log('getAnchorHref: '+href)
-
-    if (href == null) {
-      callback('HREF_NOT_FOUND')
-    } else if (href.substr(0,1) == '#'){
-      callback('HASH_MODE')
-    } else {
-      event.preventDefault();
-      callback(null, href)
-    }
 
     /**
      * Find closest anchor href.
      * @param dom
      * @api private
      */
-    function r(dom) {
-      if (dom != document.body && dom != null) {
+    function closestHref(dom, callback) {
+      if (dom == document.body || dom == null) {
+        callback('notfound')
+      } else {
         if (dom.nodeName == 'A') {
-          if (typeof dom.attributes.href == 'undefined'){
-            href = null
+          if (typeof dom.attributes.href == 'undefined') {
+            callback('err')
           } else {
-            href = dom.attributes.href.value
+            callback(null, dom.attributes.href.value)
           }
         } else {
-          r(dom.parentNode)
+          closestHref(dom.parentNode, callback)
         }
       }
     }
 
+  }, false)
 
-  }
+  next()
 
 }

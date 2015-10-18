@@ -21,7 +21,6 @@ function parseurl(url) {
   var a =  document.createElement('a');
   a.href = url;
 
-
   /**
    * IE下，a.pathname是不显示第一个字符'/'的，
    * 这会导致'/'这种url获取不到真实的pathname（会显示空字符）

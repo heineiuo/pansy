@@ -9,10 +9,7 @@ purple.Controller = function (){
     if (typeof fn === 'function'){
       if (isStackExist) console.warn('controller has exits, but this new controller will be registered: '+name)
       __stack[name] = fn
-      return __stack[name]
-    }
-
-    if (!isStackExist){
+    } else if (!isStackExist){
       console.warn('controller lost fn param, but it still run: '+name)
       __stack[name] = function(req, res, next) {
         next()
