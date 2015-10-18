@@ -148,6 +148,8 @@ function purple() {
       var filterPath = parsedUrl.pathname.substr(__app.conf.routeScope.length) || '/'
     }
 
+    console.info('请求地址: '+filterPath)
+
     var t = setTimeout(function(){
       res.end()
       console.warn('超时')
