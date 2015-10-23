@@ -47,7 +47,9 @@ module.exports = function(grunt) {
 
             debug: {
                 options: {
-                    banner: '/*! PURPLE.js (DEBUG) v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+                    banner: '/*! PURPLE.js (DEBUG) v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %>\n ' +
+                    '* YOU CANNOT USE THIS FILE ON ANY OTHER PLATFORM.'  +
+                    '*/\n'
                 },
                 files: {
                     '.grunt-cache/purple-<%= pkg.version %>.debug.min.js': ['.grunt-cache/purple-<%= pkg.version %>.js']

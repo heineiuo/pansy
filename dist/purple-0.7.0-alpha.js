@@ -1,4 +1,4 @@
-/*! PURPLE.js v0.7.0-alpha 2015-10-18 */
+/*! PURPLE.js v0.7.0-alpha 2015-10-20 */
 (function (global) {
 
   if ( typeof define === "function" && define.amd ) {
@@ -139,7 +139,7 @@ function parseurl(url) {
   var result = {
     rawUrl: a.href,
     href: a.href,
-    origin: a.origin,
+    origin: getOrigin(a),
     source: url,
     protocol: a.protocol.replace(':',''),
     hostname: a.hostname,
@@ -213,6 +213,31 @@ function parseurl(url) {
   result.parsedUrl = parsedURL
 
   return result
+
+  function getOrigin(a) {
+
+    if (typeof a.origin != 'undefined') {
+      return a.origin
+    }
+
+    var origin = a.protocol + '//' + a.hostname
+    if (a.port == '') {
+      return origin
+    }
+
+    if (a.port == '80' && a.protocol == 'http:') {
+      return origin
+    }
+
+    if (a.port == '443' && a.protocol == 'https') {
+      return origin
+    }
+
+    origin += ':'+ a.port
+
+    return origin
+
+  }
 };
 function routeChecker(req, path){
 
@@ -330,7 +355,7 @@ function purple() {
 
   // 配置
   __app.conf = {
-    origin: location.protocol+'//'+location.hostname+(location.port==''?'':(':'+location.port)),
+    origin: location.origin || location.protocol+'//'+location.hostname+(location.port==''?'':(':'+location.port)),
     timeout: 60000, // 一分钟
     routeByQuery: false,
     routeQuery: 'route', //默认
@@ -461,7 +486,11 @@ function purple() {
     if (__app.conf.routeByQuery){
       var filterPath = parsedUrl.query[__app.conf.routeQuery] || '/'
     } else {
-      var filterPath = parsedUrl.pathname.substr(__app.conf.routeScope.length) || '/'
+      if(parsedUrl.pathname.match(new RegExp('^'+__app.conf.routeScope))){
+        var filterPath = parsedUrl.pathname.substr(__app.conf.routeScope.length) || '/'
+      } else {
+        var filterPath = '/'
+      }
     }
 
     console.info('请求地址: '+filterPath)
@@ -605,32 +634,27 @@ purple.Router = function(){
 };
 purple.Controller = function (){
 
+  var __stack = {}
+
   return function (name, fn){
 
-    var it = this
-
-    if (typeof it.__stack == 'undefined') {
-      it.__stack = {}
-    }
-
-    var isStackExist = typeof it.__stack[name] != 'undefined'
+    var isStackExist = typeof __stack[name] != 'undefined'
 
     if (typeof fn === 'function'){
       if (isStackExist) console.warn('controller has exits, but this new controller will be registered: '+name)
-      it.__stack[name] = fn
+      __stack[name] = fn
     } else if (!isStackExist){
       console.warn('controller lost fn param, but it still run: '+name)
-      it.__stack[name] = function(req, res, next) {
+      __stack[name] = function(req, res, next) {
         next()
       }
     }
 
-    return it.__stack[name]
+    return __stack[name]
 
   }
 
-}
-;
+};
 
   return purple;
 

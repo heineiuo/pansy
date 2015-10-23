@@ -14,7 +14,7 @@ function purple() {
 
   // 配置
   __app.conf = {
-    origin: location.protocol+'//'+location.hostname+(location.port==''?'':(':'+location.port)),
+    origin: location.origin || location.protocol+'//'+location.hostname+(location.port==''?'':(':'+location.port)),
     timeout: 60000, // 一分钟
     routeByQuery: false,
     routeQuery: 'route', //默认
@@ -145,7 +145,11 @@ function purple() {
     if (__app.conf.routeByQuery){
       var filterPath = parsedUrl.query[__app.conf.routeQuery] || '/'
     } else {
-      var filterPath = parsedUrl.pathname.substr(__app.conf.routeScope.length) || '/'
+      if(parsedUrl.pathname.match(new RegExp('^'+__app.conf.routeScope))){
+        var filterPath = parsedUrl.pathname.substr(__app.conf.routeScope.length) || '/'
+      } else {
+        var filterPath = '/'
+      }
     }
 
     console.info('请求地址: '+filterPath)

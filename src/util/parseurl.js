@@ -31,7 +31,7 @@ function parseurl(url) {
   var result = {
     rawUrl: a.href,
     href: a.href,
-    origin: a.origin,
+    origin: getOrigin(a),
     source: url,
     protocol: a.protocol.replace(':',''),
     hostname: a.hostname,
@@ -105,4 +105,29 @@ function parseurl(url) {
   result.parsedUrl = parsedURL
 
   return result
+
+  function getOrigin(a) {
+
+    if (typeof a.origin != 'undefined') {
+      return a.origin
+    }
+
+    var origin = a.protocol + '//' + a.hostname
+    if (a.port == '') {
+      return origin
+    }
+
+    if (a.port == '80' && a.protocol == 'http:') {
+      return origin
+    }
+
+    if (a.port == '443' && a.protocol == 'https') {
+      return origin
+    }
+
+    origin += ':'+ a.port
+
+    return origin
+
+  }
 }
