@@ -11,7 +11,7 @@ function url(val){
     protocol: a.protocol,
     // functions
     pathname: pathname,
-    parmas: params,
+    params: params,
     query: query,
     origin: origin,
     beforeHash: beforeHash,
@@ -22,7 +22,7 @@ function url(val){
         protocol: a.protocol,
         hostname: a.hostname,
         pathname: pathname(),
-        parmas: params(),
+        params: params(),
         query: query(),
         origin: origin(),
       }
