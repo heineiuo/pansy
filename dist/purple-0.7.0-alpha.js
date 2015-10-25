@@ -1,4 +1,4 @@
-/*! PURPLE.js v0.7.0-alpha 2015-10-25 */
+/*! PURPLE.js v0.7.0-alpha 2015-10-25 16:54:17 UTC */
 (function (global) {
 
   if ( typeof define === "function" && define.amd ) {
@@ -41,26 +41,27 @@ function anchorClick(req, res, next){
           }
           // 交出处理权
         } else {
-          closestHref(dom.parentNode, callback)
+          closestHref(dom.parentNode)
         }
       }
       // 结束递归, 交出处理权
     }
 
     function hrefHandle(value) {
-      if (value.substr(0,1) != '#'){
-        if (url(location.href).origin() == url(value).origin()) {
-          if (url(location.href).beforeHash() != url(value).beforeHash()){
-            // 确认拿到处理权 (- -!不容易啊
-            event.preventDefault()
-            console.info('开始解析:'+value)
-            __app.app.go(value, 'push')
-          }
-          // 交出处理权
+      if (value.substr(0,1) != '#') {
+        if (url(location.href).href == url(value).href) {
+          // 拿到处理权,但url相同, 不跳转
+          event.preventDefault()
+          console.info('相同url默认无操作,如有特殊需求请手动app.go()')
+        } else if( url(location.href).origin() == url(value).origin() &&
+          url(location.href).beforeHash() != url(value).beforeHash()) {
+          // 拿到处理权,并跳转
+          event.preventDefault()
+          console.info('开始解析:' + value)
+          __app.app.go(value, 'push')
         }
-        // 交出处理权
       }
-      // 交出处理权
+
     }
 
   }, false)
@@ -98,48 +99,6 @@ function errHandleChecker(fn){
     return fn.toString().match(/[A-Z0-9a-z,(\s]*\)/)[0].split(',').length == 4
   } catch(e){
     return false
-  }
-};
-
-/**
- * W A R N I N G!
- * It's almost be deprecated.
- */
-function cleanHref(){
-
-  var result = {
-    href: a.href,
-    source: url,
-    relative: (a.href.match(/tps?:\/\/[^\/]+(.+)/) || [,''])[1], //  除去origin之外的全部
-    search: a.search,
-    hash: a.hash.replace('#',''),
-    hashes: clean(a.hash.replace(/^(#)*/i,'').replace(/^\//,'').split('/'),''),
-    file: (a.pathname.match(/\/([^\/?#]+)$/i) || [,''])[1]
-  };
-
-  var parsedURL = '/' + result.pathnames.join('/');
-
-  if(!isEmpty(result.searches)){
-    parsedURL += String('?');
-    for (var x in result.searches) {
-      if (result.searches.hasOwnProperty(x)){
-        parsedURL += x + '=';
-        parsedURL += ('undefined' != typeof result.searches[x]) ? result.searches[x]: '';
-        parsedURL += '&'
-      }
-    }
-    parsedURL = parsedURL.substring(0, parsedURL.length-1)
-  }
-
-  if (result.hashes.length>0) {
-    parsedURL += '#';
-    for (var i = 0; i < result.hashes.length; i++) {
-      if (i<result.hashes.length-1) {
-        parsedURL += result.hashes[i] + String('/')
-      } else {
-        parsedURL += result.hashes[i]
-      }
-    }
   }
 };
 function routeChecker(req, path){
@@ -241,19 +200,6 @@ function forEach(arr, fn){
 }
 
 /**
- * check empty object
- * @param obj
- * @returns {boolean}
- */
-function isEmpty(obj) {
-  for(var prop in obj) {
-    if(obj.hasOwnProperty(prop))
-      return false;
-  }
-  return true;
-}
-
-/**
  * map objects and callback(item, index)
  * @param obj
  * @param callback
@@ -269,17 +215,6 @@ function map(obj, callback) {
     }
   }
   return result;
-}
-
-/**
- * findout item's index in arr
- * @param arr
- * @param value
- * @param fromIndex
- * @returns {*}
- */
-function indexOf(arr, value, fromIndex) {
-  return arr.indexOf(value, fromIndex)
 }
 
 /**
@@ -482,11 +417,14 @@ function purple() {
       historyStateType: type || 'push' // 堆栈方式,默认是push
     })
 
+    var end = false
+
     /**
      * 封装响应处理
      */
     var res = {
       end: function () {
+        end = true
         __app.state.complete = true
         __app.state.errorStack = null
         clearTimeout(t)
@@ -494,16 +432,18 @@ function purple() {
 
         if (__app.conf.spa){
           if (req.historyStateType == 'replace') {
-            history.replaceState('data', 'title', req.parsedURL)
+            history.replaceState('data', 'title', req.rawUrl)
           } else {
-            history.pushState('data', 'title', req.parsedURL)
+            history.pushState('data', 'title', req.rawUrl)
           }
         }
       },
 
-      redirect: function(href){
-        this.end();
-        __app.app.go(href, 'replace')
+      redirect: function(href) {
+        res.end()
+        console.log('请求跳转')
+        if (!__app.conf.spa) return location.replace(href)
+        __app.app.go(href, 'push')
       }
     }
 
@@ -512,6 +452,9 @@ function purple() {
      */
     var index = -1;
     var next = function (err) {
+
+      if (end) return console.error('Run next() after red.end(), PLS check.')
+
       index ++
 
       // 错误堆栈

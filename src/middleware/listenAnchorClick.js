@@ -28,26 +28,27 @@ function anchorClick(req, res, next){
           }
           // 交出处理权
         } else {
-          closestHref(dom.parentNode, callback)
+          closestHref(dom.parentNode)
         }
       }
       // 结束递归, 交出处理权
     }
 
     function hrefHandle(value) {
-      if (value.substr(0,1) != '#'){
-        if (url(location.href).origin() == url(value).origin()) {
-          if (url(location.href).beforeHash() != url(value).beforeHash()){
-            // 确认拿到处理权 (- -!不容易啊
-            event.preventDefault()
-            console.info('开始解析:'+value)
-            __app.app.go(value, 'push')
-          }
-          // 交出处理权
+      if (value.substr(0,1) != '#') {
+        if (url(location.href).href == url(value).href) {
+          // 拿到处理权,但url相同, 不跳转
+          event.preventDefault()
+          console.info('相同url默认无操作,如有特殊需求请手动app.go()')
+        } else if( url(location.href).origin() == url(value).origin() &&
+          url(location.href).beforeHash() != url(value).beforeHash()) {
+          // 拿到处理权,并跳转
+          event.preventDefault()
+          console.info('开始解析:' + value)
+          __app.app.go(value, 'push')
         }
-        // 交出处理权
       }
-      // 交出处理权
+
     }
 
   }, false)

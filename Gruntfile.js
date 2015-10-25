@@ -10,7 +10,7 @@ module.exports = function(grunt) {
             js: {
                 options: {
                     separator: ';\n',
-                    banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+                    banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("UTC:yyyy-mm-dd HH:MM:ss Z") %> */\n'
                 },
                 files: {
                     '.grunt-cache/purple-<%= pkg.version %>.js': [
@@ -38,7 +38,7 @@ module.exports = function(grunt) {
                         drop_console: true
                     },
                     //mangleProperties: true,
-                    banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+                    banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("UTC:yyyy-mm-dd HH:MM:ss Z") %> */\n'
                 },
                 files: {
                     '.grunt-cache/purple-<%= pkg.version %>.min.js': ['.grunt-cache/purple-<%= pkg.version %>.js']
@@ -47,7 +47,7 @@ module.exports = function(grunt) {
 
             debug: {
                 options: {
-                    banner: '/*! PURPLE.js (DEBUG) v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %>\n ' +
+                    banner: '/*! PURPLE.js (DEBUG) v<%= pkg.version %> <%= grunt.template.today("UTC:yyyy-mm-dd HH:MM:ss Z") %>\n ' +
                     '* YOU CANNOT USE THIS FILE ON ANY OTHER PLATFORM.'  +
                     '*/\n'
                 },

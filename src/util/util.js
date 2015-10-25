@@ -16,19 +16,6 @@ function forEach(arr, fn){
 }
 
 /**
- * check empty object
- * @param obj
- * @returns {boolean}
- */
-function isEmpty(obj) {
-  for(var prop in obj) {
-    if(obj.hasOwnProperty(prop))
-      return false;
-  }
-  return true;
-}
-
-/**
  * map objects and callback(item, index)
  * @param obj
  * @param callback
@@ -44,17 +31,6 @@ function map(obj, callback) {
     }
   }
   return result;
-}
-
-/**
- * findout item's index in arr
- * @param arr
- * @param value
- * @param fromIndex
- * @returns {*}
- */
-function indexOf(arr, value, fromIndex) {
-  return arr.indexOf(value, fromIndex)
 }
 
 /**

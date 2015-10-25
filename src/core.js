@@ -166,11 +166,14 @@ function purple() {
       historyStateType: type || 'push' // 堆栈方式,默认是push
     })
 
+    var end = false
+
     /**
      * 封装响应处理
      */
     var res = {
       end: function () {
+        end = true
         __app.state.complete = true
         __app.state.errorStack = null
         clearTimeout(t)
@@ -178,16 +181,18 @@ function purple() {
 
         if (__app.conf.spa){
           if (req.historyStateType == 'replace') {
-            history.replaceState('data', 'title', req.parsedURL)
+            history.replaceState('data', 'title', req.rawUrl)
           } else {
-            history.pushState('data', 'title', req.parsedURL)
+            history.pushState('data', 'title', req.rawUrl)
           }
         }
       },
 
-      redirect: function(href){
-        this.end();
-        __app.app.go(href, 'replace')
+      redirect: function(href) {
+        res.end()
+        console.log('请求跳转')
+        if (!__app.conf.spa) return location.replace(href)
+        __app.app.go(href, 'push')
       }
     }
 
@@ -196,6 +201,9 @@ function purple() {
      */
     var index = -1;
     var next = function (err) {
+
+      if (end) return console.error('Run next() after red.end(), PLS check.')
+
       index ++
 
       // 错误堆栈
