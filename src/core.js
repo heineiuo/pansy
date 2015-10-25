@@ -14,7 +14,6 @@ function purple() {
 
   // 配置
   __app.conf = {
-    origin: location.origin || location.protocol+'//'+location.hostname+(location.port==''?'':(':'+location.port)),
     timeout: 60000, // 一分钟
     routeByQuery: false,
     routeQuery: 'route', //默认
@@ -132,15 +131,10 @@ function purple() {
     if (!__app.state.complete) return false
     __app.state.complete = false
 
-
     /**
      * 解析url
      */
-    var parsedUrl = parseurl(rawUrl)
-
-    if (parsedUrl.origin != __app.conf.origin) {
-      location.replace(rawUrl)
-    }
+    var parsedUrl = url(rawUrl).all()
 
     if (__app.conf.routeByQuery){
       var filterPath = parsedUrl.query[__app.conf.routeQuery] || '/'

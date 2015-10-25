@@ -9,20 +9,15 @@ function popstateChange(req, res, next) {
 
   if (!__app.conf.spa) return next()
 
-  console.log('开启监听浏览器popstate状态')
+  console.info('监听浏览器popstate状态: 开启')
 
   window.addEventListener('popstate', function (event){
 
-    var curUrl = __app.state.curUrl
-    var newUrl = location.href
-    var curUrlParsed = parseurl(curUrl)
-    var newUrlParsed = parseurl(newUrl)
-
-    if (curUrlParsed.pathname == newUrlParsed.pathname && curUrlParsed.search == newUrlParsed.search) {
-      console.log('HASH_CHNAGED')
-    } else {
+    if (url(__app.state.curUrl).beforeHash() != url(location.href).beforeHash()){
+      // 确认拿到处理权 (→_→ 比隔壁容易多了
       __app.app.go(location.href)
     }
+    // 交出处理权
 
   }, false);
 

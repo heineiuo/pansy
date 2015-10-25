@@ -1,4 +1,4 @@
-/*! PURPLE.js v0.7.0-alpha 2015-10-20 */
+/*! PURPLE.js v0.7.0-alpha 2015-10-25 */
 (function (global) {
 
   if ( typeof define === "function" && define.amd ) {
@@ -22,52 +22,52 @@ function anchorClick(req, res, next){
   if (typeof this.disabled != 'undefined') return next()
 
   this.disabled = true
-
   if(!__app.conf.spa) return next()
 
-  console.log('开启监听anchor点击')
+  console.info('监听anchor点击: 开启')
 
   document.addEventListener('click', function (event){
-
-    closestHref(event.target, function(err, href){
-      console.warn(err)
-      if (err) return false
-      if (href.substr(0,1) == '#'){
-        console.info('HASH_MODE')
-      } else {
-        event.preventDefault()
-        console.info('获取成功,开始跳转')
-        __app.app.go(href, 'push')
-      }
-    })
-
+    closestHref(event.target)
     /**
      * Find closest anchor href.
      * @param dom
      * @api private
      */
-    function closestHref(dom, callback) {
-      if (dom == document.body || dom == null) {
-        callback('notfound')
-      } else {
+    function closestHref(dom) {
+      if (dom != document.body && dom != null) {
         if (dom.nodeName == 'A') {
-          if (typeof dom.attributes.href == 'undefined') {
-            callback('err')
-          } else {
-            callback(null, dom.attributes.href.value)
+          if (typeof dom.attributes.href != 'undefined') {
+            hrefHandle(dom.attributes.href.value)
           }
+          // 交出处理权
         } else {
           closestHref(dom.parentNode, callback)
         }
       }
+      // 结束递归, 交出处理权
+    }
+
+    function hrefHandle(value) {
+      if (value.substr(0,1) != '#'){
+        if (url(location.href).origin() == url(value).origin()) {
+          if (url(location.href).beforeHash() != url(value).beforeHash()){
+            // 确认拿到处理权 (- -!不容易啊
+            event.preventDefault()
+            console.info('开始解析:'+value)
+            __app.app.go(value, 'push')
+          }
+          // 交出处理权
+        }
+        // 交出处理权
+      }
+      // 交出处理权
     }
 
   }, false)
 
   next()
 
-}
-;
+};
 /**
  * 监听浏览器的popstate change
  */
@@ -79,26 +79,20 @@ function popstateChange(req, res, next) {
 
   if (!__app.conf.spa) return next()
 
-  console.log('开启监听浏览器popstate状态')
+  console.info('监听浏览器popstate状态: 开启')
 
   window.addEventListener('popstate', function (event){
 
-    var curUrl = __app.state.curUrl
-    var newUrl = location.href
-    var curUrlParsed = parseurl(curUrl)
-    var newUrlParsed = parseurl(newUrl)
-
-    if (curUrlParsed.pathname == newUrlParsed.pathname && curUrlParsed.search == newUrlParsed.search) {
-      console.log('HASH_CHNAGED')
-    } else {
+    if (url(__app.state.curUrl).beforeHash() != url(location.href).beforeHash()){
+      // 确认拿到处理权 (→_→ 比隔壁容易多了
       __app.app.go(location.href)
     }
+    // 交出处理权
 
   }, false);
 
   next()
-}
-;
+};
 function errHandleChecker(fn){
   try{
     return fn.toString().match(/[A-Z0-9a-z,(\s]*\)/)[0].split(',').length == 4
@@ -108,81 +102,22 @@ function errHandleChecker(fn){
 };
 
 /**
- * URL 解析
- * 2014-05-27 13:24:33
-
- source == origin+pathname+search+hash
- source == origin+relative
- source == protocol+hostname+port+relative
-
- search即从origin后的第一个?开始，到第一个#号之前
- hash从第一个#开始，一直到结束
-
- 所以先判断hash，将href中的hash成分去除
- 再判断search，只要看看还有没有?号即可
- 剩下的就是origin+pathname了
-
- 如果origin不是当前的origin，则用location.replace(source)进行跳转。
-
+ * W A R N I N G!
+ * It's almost be deprecated.
  */
-function parseurl(url) {
-  var a =  document.createElement('a');
-  a.href = url;
-
-  /**
-   * IE下，a.pathname是不显示第一个字符'/'的，
-   * 这会导致'/'这种url获取不到真实的pathname（会显示空字符）
-   * 所以修正下，手动加上'/'
-   */
-  var ppx = a.pathname || '/'+ a.pathname;
+function cleanHref(){
 
   var result = {
-    rawUrl: a.href,
     href: a.href,
-    origin: getOrigin(a),
     source: url,
-    protocol: a.protocol.replace(':',''),
-    hostname: a.hostname,
-    port: a.port,
-
     relative: (a.href.match(/tps?:\/\/[^\/]+(.+)/) || [,''])[1], //  除去origin之外的全部
-
-    // pathname string
-    pathname: ppx.replace(/^([^\/])/,'/$1'),
-
-    // pathnames array
-    pathnames: clean(a.pathname.replace(/^\//,'').split('/'),''),
-
-
-    // search string
     search: a.search,
-
-    // searches  key-value
-    query: (function(){
-      var ret = {},
-        seg = a.search.replace(/^\?/,'').split('&'),
-        len = seg.length, i = 0, s;
-      for (;i<len;i++) {
-        if (!seg[i]) { continue; }
-        s = seg[i].split('=');
-        ret[s[0]] = s[1];
-      }
-      return ret;
-    })(),
-
-    /**
-     * hash字符串+关联数组
-     */
     hash: a.hash.replace('#',''),
     hashes: clean(a.hash.replace(/^(#)*/i,'').replace(/^\//,'').split('/'),''),
-
     file: (a.pathname.match(/\/([^\/?#]+)$/i) || [,''])[1]
   };
 
-
-
   var parsedURL = '/' + result.pathnames.join('/');
-
 
   if(!isEmpty(result.searches)){
     parsedURL += String('?');
@@ -196,7 +131,6 @@ function parseurl(url) {
     parsedURL = parsedURL.substring(0, parsedURL.length-1)
   }
 
-
   if (result.hashes.length>0) {
     parsedURL += '#';
     for (var i = 0; i < result.hashes.length; i++) {
@@ -206,37 +140,6 @@ function parseurl(url) {
         parsedURL += result.hashes[i]
       }
     }
-  }
-
-  result.params = result.pathnames
-  result.parsedURL = parsedURL
-  result.parsedUrl = parsedURL
-
-  return result
-
-  function getOrigin(a) {
-
-    if (typeof a.origin != 'undefined') {
-      return a.origin
-    }
-
-    var origin = a.protocol + '//' + a.hostname
-    if (a.port == '') {
-      return origin
-    }
-
-    if (a.port == '80' && a.protocol == 'http:') {
-      return origin
-    }
-
-    if (a.port == '443' && a.protocol == 'https') {
-      return origin
-    }
-
-    origin += ':'+ a.port
-
-    return origin
-
   }
 };
 function routeChecker(req, path){
@@ -248,6 +151,78 @@ function routeChecker(req, path){
   }
 
 };
+
+function url(val){
+
+  var a =  document.createElement('a');
+  a.href = val;
+
+  return {
+    href: a.href,
+    hash: a.hash,
+    port: a.port,
+    protocol: a.protocol,
+    // functions
+    pathname: pathname,
+    parmas: params,
+    query: query,
+    origin: origin,
+    beforeHash: beforeHash,
+
+    all: function(){
+      return {
+        port: a.port,
+        protocol: a.protocol,
+        hostname: a.hostname,
+        pathname: pathname(),
+        parmas: params(),
+        query: query(),
+        origin: origin(),
+      }
+    }
+  }
+
+  function beforeHash(){
+    return a.href.replace(/#.*/, '')
+  }
+
+  function pathname(){
+    var ppx = a.pathname || '/'+ a.pathname; // fix IE bug.
+    return ppx.replace(/^([^\/])/,'/$1')
+  }
+
+  function params(){
+    return clean(a.pathname.replace(/^\//,'').split('/'),'')
+  }
+
+  function query(){
+    var ret = {}
+    var seg = a.search.replace(/^\?/,'').split('&')
+    var len = seg.length
+    for (var i=0; i<len; i++) {
+      if (!seg[i]) continue
+      var s = seg[i].split('=')
+      ret[s[0]] = s[1]
+    }
+    return ret
+  }
+
+  function origin() {
+    if (typeof a.origin != 'undefined') return a.origin
+    // fix IE bug.
+    var origin = a.protocol + '//' + a.hostname
+    if (a.port == '') return origin
+    if (a.port == '80' && a.protocol == 'http:') return origin
+    if (a.port == '443' && a.protocol == 'https') return origin
+    origin += ':'+ a.port
+    return origin
+  }
+
+
+
+}
+
+;
 /**
  * forEach arr and callback(item, index)
  * @param arr
@@ -355,7 +330,6 @@ function purple() {
 
   // 配置
   __app.conf = {
-    origin: location.origin || location.protocol+'//'+location.hostname+(location.port==''?'':(':'+location.port)),
     timeout: 60000, // 一分钟
     routeByQuery: false,
     routeQuery: 'route', //默认
@@ -473,15 +447,10 @@ function purple() {
     if (!__app.state.complete) return false
     __app.state.complete = false
 
-
     /**
      * 解析url
      */
-    var parsedUrl = parseurl(rawUrl)
-
-    if (parsedUrl.origin != __app.conf.origin) {
-      location.replace(rawUrl)
-    }
+    var parsedUrl = url(rawUrl).all()
 
     if (__app.conf.routeByQuery){
       var filterPath = parsedUrl.query[__app.conf.routeQuery] || '/'
