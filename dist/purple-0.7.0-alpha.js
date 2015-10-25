@@ -1,4 +1,4 @@
-/*! PURPLE.js v0.7.0-alpha 2015-10-25 16:54:17 UTC */
+/*! PURPLE.js v0.7.0-alpha 2015-10-25 17:28:59 UTC */
 (function (global) {
 
   if ( typeof define === "function" && define.amd ) {
@@ -86,7 +86,7 @@ function popstateChange(req, res, next) {
 
     if (url(__app.state.curUrl).beforeHash() != url(location.href).beforeHash()){
       // 确认拿到处理权 (→_→ 比隔壁容易多了
-      __app.app.go(location.href)
+      __app.app.go(location.href, 'replace')
     }
     // 交出处理权
 
@@ -123,7 +123,7 @@ function url(val){
     protocol: a.protocol,
     // functions
     pathname: pathname,
-    parmas: params,
+    params: params,
     query: query,
     origin: origin,
     beforeHash: beforeHash,
@@ -134,7 +134,7 @@ function url(val){
         protocol: a.protocol,
         hostname: a.hostname,
         pathname: pathname(),
-        parmas: params(),
+        params: params(),
         query: query(),
         origin: origin(),
       }

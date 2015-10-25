@@ -15,7 +15,7 @@ function popstateChange(req, res, next) {
 
     if (url(__app.state.curUrl).beforeHash() != url(location.href).beforeHash()){
       // 确认拿到处理权 (→_→ 比隔壁容易多了
-      __app.app.go(location.href)
+      __app.app.go(location.href, 'replace')
     }
     // 交出处理权
 
