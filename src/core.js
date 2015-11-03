@@ -1,510 +1,330 @@
 /**
- * __purple
- * @api private
- */
-var __purple = {
-  app: {}
-};
-
-/**
  * Create or return an App.
  *
  * @param arg
  * @returns {*}
  */
-function purple (arg) {
-  if (typeof arg == 'undefined') {
-    return findorCreateApp({name: '__anonymous'})
-  }
-
-  if (typeof arg == 'string') {
-    return findorCreateApp({name: arg})
-  }
-
-  if (typeof arg == 'object') {
-    return findorCreateApp(extend({name: '__anonymous'}, arg))
-  }
-
-  function findorCreateApp(argu) {
-    if (typeof __purple.app[argu.name] == 'undefined'){
-      return createApp(argu)
-    } else {
-      return __purple.app[argu.name]
-    }
-  }
+var __app = {
+  init: false
 }
 
 
+var purple = function() {
 
-/**
- * @param {object} arg
- * @returns {Object} app
- * @api private
- *
- */
-function createApp (arg) {
+  if (__app.init) return __app.app
 
-  console.log('正在创建app:'+arg.name)
+  // 初始化
 
-  var conf = extend({
-    filter: {
-      //pathname: '',
-      //search: ''
-    },
-    spa: false,
-    timeout: 45000,
-    exceptionHandler: function(err, req, res, next){
-      if (!err){
-        next()
-      } else {
-        console.error(err)
-        res.end()
-      }
-    },
-    notFoundHandle: function(req, res){
-      // todo 404
-      res.end()
-    }
-  }, arg);
+  // 配置
+  __app.conf = {
+    timeout: 60000, // 一分钟
+    routeByQuery: false,
+    routeQuery: 'route', //默认
+    routeScope: '',
+    spa: false
+  }
 
-  var state = updateStateByConf({
-    spa: false,
+  // 状态
+  __app.state = {
     complete: true,
     prevUrl: null,
-    curUrl: location.href
-  }, conf);
+    curUrl: location.href,
+    errorStack: null
+  }
 
-  __purple.app[arg.name] = {
-
-    // 配置
-    conf: conf,
+  // 中间件集合
+  __app.stack = []
 
 
-    // 状态
-    state: state,
+  // 返回app及接口
+  __app.app = {}
 
-    // 中间件
-    middleware: [],
+  /**
+   * Set app config.
+   */
 
-    // 路由集合
-    list: {},
+  __app.app.config = function(name, value){
+    if (typeof value != 'undefined') {
+      __app.conf[name] = value
+    }
+    return __app.conf[name] || undefined
+  }
 
-    /**
-     * Set app config.
-     */
-    set: function(name, conf) {
-      var _thisApp = this;
-      var _conf = extend({}, _thisApp.conf); // clone
+  __app.app.set = __app.app.get =__app.app.config // todo deprecated
 
-      if (typeof name == 'object') {
-        _conf = extend(_conf, name)
-      } else {
-        _conf[name] = conf;
-      }
 
-      // 禁止修改name
-      _conf.name = _thisApp.conf.name;
-      // 更新state
-      _thisApp.state = updateStateByConf(state, _conf);
-      // 更新conf
-      _thisApp.conf = _conf;
-    },
+  /**
+   * Add middleware for app.
+   * @param path
+   * @param fn
+   * @api public
+   */
+  __app.app.use = function () {
 
-    /**
-     * Add middleware for app.
-     * @param {function} fn
-     * @api public
-     */
-    use: function (fn) {
-      this.middleware.push(fn)
-    },
+    if (arguments.length == 1){
 
-    /**
-     * Define a router and output a `get` method.
-     *
-     * @param {string|regex|Array} rawHref
-     * @returns {object}
-     * @api public
-     */
-    route: function(rawHref) {
-      // 判断href是否合法
-      var href;
-      var _thisApp = this;
-
-      if (rawHref instanceof Array) {
-        href = new RegExp('(^'+rawHref.join('$)|(^')+'$)')
-      } else if (typeof rawHref == 'string') {
-        href = new RegExp('^'+rawHref+'$')
-      } else if (rawHref instanceof RegExp){
-        href = rawHref
-      } else {
-        // todo error handle
-        return false
-      }
-
-      _thisApp.list[href] = {
-        regexp: href,
-        get: function () {
-          this.fns = Array.prototype.slice.call(arguments,0)
+      // 注册普通中间件
+      if ( typeof arguments[0] === 'function'){
+        var middleware = {
+          fn: arguments[0]
         }
-      };
+        middleware.isErrorHandle = errHandleChecker(middleware.fn)
+        __app.stack.push(middleware)
 
-      return _thisApp.list[href]
-    },
+      // 注册模块
+      } else if (arguments[0] instanceof Array) {
 
-    /**
-     * Core method. Change the route state.
-     * @param {string} href
-     * @param {string} type
-     * @api public
-     */
-    go: function(href, type){
+        var arr = arguments[0]
 
-      var _thisApp = this;
-
-      if (!_thisApp.state.complete) {
-        return false;
-      }
-
-      _thisApp.state.complete = false;
-
-      var req = extend(parseurl(href), {
-        prevUrl: _thisApp.state.curUrl,
-        rawUrl: href, // 原始请求连接
-        historyStateType: type || 'push' // 堆栈方式
-      });
-
-      var res = {
-
-        end: function () {
-          clearTimeout(t)
-          _thisApp.state.complete = true;
-          console.log('路由跳转完毕。');
-        },
-
-        redirect: function(href){
-          this.end();
-          _thisApp.go(href);
-        }
-      };
-
-
-      // 使用中间件
-      var flow = [findRoute].concat(_thisApp.middleware)
-
-      // 超时处理
-      var t = setTimeout(function(){
-        console.warn('超时')
-        res.end()
-      }, _thisApp.conf.timeout)
-
-      /**
-       * 开始执行
-       */
-      next();
-
-      function next (err) {
-        if(typeof err != 'undefined' && err != null){
-          _thisApp.conf.exceptionHandler(err, req, res, next)
-        } else if (!_thisApp.state.complete) {
-          if (flow.length > 0) {
-            flow.shift()(req, res, next)
+        map(arr, function(item, index){
+          if (typeof item === 'function'){
+            __app.app.use(item)
+          } else if (item instanceof Array && item.length ==2) {
+            __app.app.use(item[0], item[1])
           } else {
-            res.end()
+            console.warn('use参数有误')
+            console.warn(item)
           }
-        }
-      }
+        })
 
-      /**
-       * 查找路由器
-       */
-      function findRoute(req, res, next) {
-        console.log('正在解析地址：'+req.rawUrl);
+      //注册模块
+      } else if (arguments[0] instanceof Object) {
 
-        /**
-         * 不在filter范围内，跳转页面。
-         */
-        var routePath = req.parsedUrl
-        var notfound = true
-        var mathResult = routePath.match(_thisApp.conf.filter.pathname)
-        if (mathResult){
-
-          if (typeof _thisApp.conf.filter.search != 'undefined'){
-            console.log('路由模式切换为使用searches参数:'+_thisApp.conf.filter.search)
-
-            /**
-             * 开启使用参数模式做跳转
-             * 使用search做路由的前提是要满足pathname过滤规则
-             */
-            var search = _thisApp.conf.filter.search
-            if (typeof req.searches[search] != 'undefined' && req.searches[search] != ''){
-              routePath = req.searches[search]
-            } else {
-              routePath = '/'
-            }
-          } else {
-            routePath = req.pathname.substr(Object(mathResult[0]).length)
-          }
-
+        if (arguments[0].__stack instanceof Array) {
+          __app.app.use(arguments[0].__stack)
         } else {
-          console.warn('routePath不符合pathname过滤规则，浏览器重定向到请求网址')
-          location.replace(req.rawUrl)
+          console.warn('use router 时参数有误')
         }
+      } else {
+        console.warn('use参数异常')
+      }
+    } else if (arguments.length == 2 ) {
 
-        console.log('过滤后的routePath: '+routePath)
+      var path = arguments[0]
 
-        _thisApp.state.prevUrl = _thisApp.state.curUrl
-        _thisApp.state.curUrl = req.parsedUrl
+      if (path instanceof Array) {
+        path = new RegExp('(^'+path.join('$)|(^')+'$)')
+      } else if (typeof path == 'string') {
+        path = new RegExp('^'+path+'$')
+      }
 
-        if (_thisApp.state.spa){
+      if (!path instanceof RegExp) {
+        console.error('route参数错误: '+path)
+      }
+
+      __app.stack.push({
+        fn: arguments[1],
+        path: path,
+        isErrorHandel: errHandleChecker(arguments[1])
+      })
+
+    }
+
+  }
+
+  /**
+   * Router
+   **/
+
+  __app.app.route = function(path){
+    return {
+      get: function(){
+        var fns = Array.prototype.slice.call(arguments,0)
+        map(fns, function(fn, index){
+          __app.app.use(path, fn)
+        })
+      }
+    }
+  }
+
+  /**
+   * Core method. Change the route state.
+   * @param {string} href
+   * @param {string} type
+   * @api public
+   */
+  __app.app.go = function(rawUrl, type){
+
+    if (!__app.state.complete) return false
+    __app.state.complete = false
+
+    /**
+     * 解析url
+     */
+    var parsedUrl = url(rawUrl).all()
+
+    if (__app.conf.routeByQuery){
+      console.log(parsedUrl.query)
+      var filterPath = parsedUrl.query[__app.conf.routeQuery] || '/'
+    } else {
+      if(parsedUrl.pathname.match(new RegExp('^'+__app.conf.routeScope))){
+        var filterPath = parsedUrl.pathname.substr(__app.conf.routeScope.length) || '/'
+      } else {
+        var filterPath = '/'
+      }
+      parsedUrl.params = clean(filterPath.replace(/^\//,'').split('/'),'')
+    }
+
+    console.info('请求地址: '+filterPath)
+
+    var t = setTimeout(function(){
+      res.end()
+      console.warn('超时')
+    }, __app.conf.timeout)
+
+    /**
+     * 封装请求
+     */
+    var req = extend(parsedUrl, {
+      routed: false,
+      expire: Date.now() + __app.conf.timeout,
+      conf: __app.conf,
+      state: __app.state,
+      filterPath: filterPath,
+      rawUrl: rawUrl, // 原始请求连接
+      historyStateType: type || 'push' // 堆栈方式,默认是push
+    })
+
+    var end = false
+
+    /**
+     * 封装响应处理
+     */
+    var res = {
+      end: function () {
+        end = true
+        __app.state.complete = true
+        __app.state.errorStack = null
+        clearTimeout(t)
+        console.info('请求结束')
+
+        if (__app.conf.spa){
+          console.log('spa: '+ __app.conf.spa)
           if (req.historyStateType == 'replace') {
-            history.replaceState('data', 'title', req.parsedURL)
-          } else  {
-            history.pushState('data', 'title', req.parsedURL)
+            history.replaceState('data', 'title', req.rawUrl)
+          } else {
+            history.pushState('data', 'title', req.rawUrl)
           }
         }
+      },
 
+      redirect: function(href) {
+        res.end()
+        console.log('请求跳转')
+        __app.app.go(href, 'push')
+      }
+    }
 
-        // 判断href是否合法
-        // 判断href是否在list中
-        for(var key in _thisApp.list) {
-          if (_thisApp.list.hasOwnProperty(key)) {
-            if (_thisApp.list[key].regexp.test(routePath)) {
-              console.log('解析路由成功：'+_thisApp.list[key].regexp);
-              flow = flow.concat(_thisApp.middleware, _thisApp.list[key].fns);
-              notfound = false
-              return next()
+    /**
+     * 流程控制
+     */
+    var index = -1;
+    var next = function (err) {
+
+      if (end) return console.error('Run next() after red.end(), PLS check.')
+
+      index ++
+
+      // 错误堆栈
+      if (typeof err != 'undefined'){
+        if (!__app.state.errorStack){
+          __app.state.errorStack = []
+        }
+        __app.state.errorStack.push(err)
+      }
+
+      // 检查指针
+      if(index >= __app.stack.length) {
+        // 错误检查
+        if (__app.state.errorStack){
+          console.error(__app.state.errorStack)
+        }
+        // 404 检查
+        if (!req.routed){
+          console.error('404 not found')
+        }
+        res.end()
+      } else {
+        // 检查失效层
+        if (typeof __app.stack[index].disabled != 'undefined'){
+          next()
+        } else {
+          // 检查路由
+          if (typeof __app.stack[index].path != 'undefined') {
+            if (!routeChecker(req, __app.stack[index].path)){
+              // 不匹配
+              next()
+            } else {
+              req.routed = true
+              errCheck()
+            }
+          } else {
+            errCheck()
+          }
+          // 区分错误处理层
+          function errCheck(){
+            if (__app.stack[index].isErrorHandle) {
+              __app.stack[index].fn(__app.state.errorStack, req, res, next)
+            } else {
+              __app.stack[index].fn(req, res, next)
             }
           }
         }
-
-        if (notfound){
-          console.warn('该地址无法解析：' + req.rawUrl);
-          _thisApp.conf.notFoundHandle(req, res);
-        }
-
       }
-
-    }
-
-  };
-
-  return __purple.app[arg.name]
-}
-
-/**
- * 更新app状态
- * @param state
- * @param conf
- */
-function updateStateByConf(state, conf){
-
-  if (conf.spa && !state.spa){
-    state.spa = true
-    //window.addEventListener('hashchange', hashChangeHandle, false);
-    window.addEventListener('popstate', popstateHandle, false);
-    document.addEventListener('click', anchorClickHandle, false);
-  } else if (!conf.spa && state.spa){
-    state.spa = false
-    //window.removeEventListener('hashchange', hashChangeHandle, false);
-    window.removeEventListener('popstate', popstateHandle, false);
-    document.removeEventListener('click', anchorClickHandle, false);
-  }
-
-  return state;
-
-  function hashChangeHandle(){
-    console.log('hashChangeHandle')
-  }
-
-  function popstateHandle(event){
-    console.log('popstateHandle')
-    checkPopChange(function(err){
-      if (err) {
-        //console.log(err)
-      } else {
-        purple(conf.name).go(location.href)
-      }
-    })
-  }
-
-  function anchorClickHandle(event){
-    getAnchorHref(event, function(err, href){
-      if (err) {
-        //console.log(err)
-      } else {
-        purple(conf.name).go(href)
-      }
-    })
-  }
-
-  function checkPopChange(callback){
-    var curUrl = purple(conf.name).state.curUrl
-    var newUrl = location.href
-
-    var curUrlParsed = parseurl(curUrl)
-    var newUrlParsed = parseurl(newUrl)
-
-    if (curUrlParsed.pathname == newUrlParsed.pathname && curUrlParsed.search == newUrlParsed.search) {
-      callback('HASH_CHNAGED')
-    } else {
-      callback(null)
-    }
-  }
-
-
-  /**
-   * 获取被点击a标签的链接
-   * @param event
-   * @param callback
-   */
-  function getAnchorHref(event, callback){
-
-    var href = null;
-
-    r(event.target);
-
-    //console.log('getAnchorHref: '+href)
-
-    if (href == null) {
-      callback('HREF_NOT_FOUND')
-    } else if (href.substr(0,1) == '#'){
-      callback('HASH_MODE')
-    } else {
-      event.preventDefault();
-      callback(null, href)
     }
 
     /**
-     * Find closest anchor href.
-     * @param dom
-     * @api private
+     * 开始执行
      */
-    function r(dom) {
-      if (dom != document.body && dom != null) {
-        if (dom.nodeName == 'A') {
-          if (typeof dom.attributes.href == 'undefined'){
-            href = null
-          } else {
-            href = dom.attributes.href.value
-          }
-        } else {
-          r(dom.parentNode)
-        }
-      }
-    }
-
+    next()
 
   }
 
-
+  // 默认中间件
+  __app.app.use(popstateChange)
+  __app.app.use(anchorClick)
+  // 初始化成功
+  __app.init = true
+  // 返回
+  return __app.app
 
 }
 
-/**
- * URL 解析
- * 2014-05-27 13:24:33
 
- source == origin+pathname+search+hash
- source == origin+relative
- source == protocol+hostname+port+relative
+purple.Controller = Controller
+purple.Router = Router
 
- search即从origin后的第一个?开始，到第一个#号之前
- hash从第一个#开始，一直到结束
+global.require = function(){
 
- 所以先判断hash，将href中的hash成分去除
- 再判断search，只要看看还有没有?号即可
- 剩下的就是origin+pathname了
-
- 如果origin不是当前的origin，则用location.replace(source)进行跳转。
-
- */
-function parseurl(url) {
-  var a =  document.createElement('a');
-  a.href = url;
-
-
-  /**
-   * IE下，a.pathname是不显示第一个字符'/'的，
-   * 这会导致'/'这种url获取不到真实的pathname（会显示空字符）
-   * 所以修正下，手动加上'/'
-   */
-  var ppx = a.pathname || '/'+ a.pathname;
-
-  var result = {
-    rawUrl: a.href,
-    href: a.href,
-    origin: a.origin,
-    source: url,
-    protocol: a.protocol.replace(':',''),
-    hostname: a.hostname,
-    port: a.port,
-
-    relative: (a.href.match(/tps?:\/\/[^\/]+(.+)/) || [,''])[1], //  除去origin之外的全部
-
-    // pathname string
-    pathname: ppx.replace(/^([^\/])/,'/$1'),
-
-    // pathnames array
-    pathnames: clean(a.pathname.replace(/^\//,'').split('/'),''),
-
-    // search string
-    search: a.search,
-
-    // searches  key-value
-    searches: (function(){
-      var ret = {},
-        seg = a.search.replace(/^\?/,'').split('&'),
-        len = seg.length, i = 0, s;
-      for (;i<len;i++) {
-        if (!seg[i]) { continue; }
-        s = seg[i].split('=');
-        ret[s[0]] = s[1];
-      }
-      return ret;
-    })(),
-
-    /**
-     * hash字符串+关联数组
-     */
-    hash: a.hash.replace('#',''),
-    hashes: clean(a.hash.replace(/^(#)*/i,'').replace(/^\//,'').split('/'),''),
-
-    file: (a.pathname.match(/\/([^\/?#]+)$/i) || [,''])[1]
-  };
-
-
-
-  var parsedURL = '/' + result.pathnames.join('/');
-
-
-  if(!isEmpty(result.searches)){
-    parsedURL += String('?');
-    for (var x in result.searches) {
-      if (result.searches.hasOwnProperty(x)){
-        parsedURL += x + '=';
-        parsedURL += ('undefined' != typeof result.searches[x]) ? result.searches[x]: '';
-        parsedURL += '&'
-      }
-    }
-    parsedURL = parsedURL.substring(0, parsedURL.length-1)
+  var list = Array.prototype.slice.call(arguments,0)
+  return function(req, res ,next) {
+    loadjs(list, function(){
+      next()
+    }, function(depsNotFound){
+      //if (depsNotFound.indexOf('foo') > -1) {};  // foo failed
+      //if (depsNotFound.indexOf('bar') > -1) {};  // bar failed
+      //if (depsNotFound.indexOf('thunk') > -1) {};  // thunk failed
+      next(depsNotFound)
+    })
   }
 
+}
 
-  if (result.hashes.length>0) {
-    parsedURL += '#';
-    for (var i = 0; i < result.hashes.length; i++) {
-      if (i<result.hashes.length-1) {
-        parsedURL += result.hashes[i] + String('/')
-      } else {
-        parsedURL += result.hashes[i]
-      }
-    }
+
+function errHandleChecker(fn){
+  try{
+    return fn.toString().match(/[A-Z0-9a-z,(\s]*\)/)[0].split(',').length == 4
+  } catch(e){
+    return false
+  }
+}
+
+function routeChecker(req, path){
+
+  try {
+    return req.filterPath.match(path)[0] == req.filterPath
+  } catch(e){
+    return false
   }
 
-
-  result.parsedURL = parsedURL;
-  result.parsedUrl = parsedURL;
-
-  return result
 }

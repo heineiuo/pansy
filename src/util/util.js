@@ -1,29 +1,9 @@
-///**
-// * forEach
-// */
-//if (!Array.prototype.forEach) {
-//  Array.prototype.forEach = function(fun) {
-//    var len = this.length
-//    if (typeof fun != "function"){
-//      throw new TypeError()
-//    }
-//    var thisp = arguments[1];
-//    for (var i = 0; i < len; i++) {
-//      if (i in this) {
-//        fun.call(thisp, this[i], i, this)
-//      }
-//    }
-//  }
-//}
-
-
 /**
  * forEach arr and callback(item, index)
  * @param arr
  * @param fn
  */
 function forEach(arr, fn){
-
   var len = arr.length
   if (typeof fn != "function"){
     throw new TypeError()
@@ -33,19 +13,6 @@ function forEach(arr, fn){
       fn.call(arguments[1], arr[i], i, arr)
     }
   }
-}
-
-/**
- * check empty object
- * @param obj
- * @returns {boolean}
- */
-function isEmpty(obj) {
-  for(var prop in obj) {
-    if(obj.hasOwnProperty(prop))
-      return false;
-  }
-  return true;
 }
 
 /**
@@ -64,17 +31,6 @@ function map(obj, callback) {
     }
   }
   return result;
-}
-
-/**
- * findout item's index in arr
- * @param arr
- * @param value
- * @param fromIndex
- * @returns {*}
- */
-function indexOf(arr, value, fromIndex) {
-  return arr.indexOf(value, fromIndex)
 }
 
 /**

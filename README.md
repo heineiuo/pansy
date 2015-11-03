@@ -1,10 +1,11 @@
-#PURPLE.js v0.6.0
+#PURPLE.js 0.7.0-alpha
 
 ## TODO
 
-* Remove template engine.
-* Better flow control.
-* Custom router listing.
+* Separate history module as a middleware named <code>purple.History()</code>.
+* Separate router module as a middleware named <code>purple.Router()</code>.
+* Enhance <code>req</code>.
+* Make middleware system more robust.
 
 ## Introduction
 
@@ -16,25 +17,46 @@ But if you need to do something more with purple, you can use middlewires, which
 
     <script src="purple.js"></script>
 
-    var app = purple('main')
+    <script>
 
-    app.route('/hi').get(function(req, res){
-        alert('hi! '+req.searches.name)
-        res.end()
-    })
+        var router = purple.Router()
+        router.route('/').get(function(req, res){
+            console.log('hello world')
+            res.end()
+        })
 
-    app.go('/hi?name=Jack')
+    </script>
+
+    <script>
+
+        var app = purple()
+
+        app.use(router)
+        app.use(purple.History({
+            redirect: true // add res.redirect method in browser env.
+        }))
+
+        app.listen(function(){
+            console.log('app started.')
+        })
+
+        // console will log `app started`.
+        // when document.onready="success",
+        // if location.pathname = '/', console will log `hello world`,
+        // else, console will warn `not found`
+
+   </script>
+
+
 
 ### Programmatic API
 
 * <code>[purple()](#purple)</code>
-* <code>[app.route(regex|string).get(stack)]()</code>
+* <code>[purple.Router().route(regex|string).get(stack)]()</code>
 * <code>[app.set(name, content)]()</code>
-* <code>[app.go(url)]()</code>
+* <code>[app.get(name)]()</code>
 * <code>[app.use(middleware)]()</code>
-* <code>[res.end()]()</code>
-* <code>[res.redirect()]()</code> // todo
-
+* <code>[app.listen([port,] [callback])]</code>
 
 #### purple
 
@@ -57,7 +79,7 @@ But if you need to do something more with purple, you can use middlewires, which
     app.get('onpopstate');
 
 
-##### app.route(regex|string).get(stack)
+##### purple.Router().route(regex|string).get(stack)
 
     user.index = function(req, res, next){
         console.log(req.user) // => {user: {}}
@@ -70,13 +92,9 @@ But if you need to do something more with purple, you can use middlewires, which
 
     app.route('/abc').get(user.index, user.profile)
 
-##### app.go(url)
+##### app.redirect(url)
 
-    app.go('/news');
-
-##### app.back()
-
-    app.back()
+    app.redirect('/news');
 
 ##### app.use(middleware)
 
@@ -89,9 +107,5 @@ But if you need to do something more with purple, you can use middlewires, which
 
     res.end()
 
-
-
-#### test
-    '/index.php?route=/index'.replace(new RegExp(/^\/index\.php\?route\=/), '')
 
 

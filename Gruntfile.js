@@ -9,17 +9,19 @@ module.exports = function(grunt) {
 
             js: {
                 options: {
-                    separator: ';',
-                    banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+                    separator: ';\n',
+                    banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("UTC:yyyy-mm-dd HH:MM:ss Z") %> */\n'
                 },
                 files: {
-                    'tmp/purple-<%= pkg.version %>.js': [
-                        "src/head.js",
-                        "src/util.js",
+                    '.grunt-cache/purple-<%= pkg.version %>.js': [
+                        "src/wrap/wrap.head",
+                        "src/middleware/**/*.js",
+                        "src/util/**/*.js",
+                        "src/Router.js",
+                        "src/Controller.js",
                         "src/core.js",
-                        "src/foot.js"
+                        "src/wrap/wrap.foot"
                     ]
-
                 }
             }
         },
@@ -28,37 +30,63 @@ module.exports = function(grunt) {
         uglify: {
             min: {
                 options: {
-                    drop_console: true,
                     drop_debugger: true,
-                    banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+                    drop_console: true,
+
+                    compress: {
+                        drop_debugger: true,
+                        drop_console: true
+                    },
+                    //mangleProperties: true,
+                    banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("UTC:yyyy-mm-dd HH:MM:ss Z") %> */\n'
                 },
                 files: {
-                    'tmp/purple-<%= pkg.version %>.min.js': ['tmp/purple-<%= pkg.version %>.js']
+                    '.grunt-cache/purple-<%= pkg.version %>.min.js': ['.grunt-cache/purple-<%= pkg.version %>.js']
                 }
             },
 
             debug: {
                 options: {
-                    banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+                    banner: '/*! PURPLE.js (DEBUG) v<%= pkg.version %> <%= grunt.template.today("UTC:yyyy-mm-dd HH:MM:ss Z") %>\n ' +
+                    '* YOU CANNOT USE THIS FILE ON ANY OTHER PLATFORM.'  +
+                    '*/\n'
                 },
                 files: {
-                    'tmp/purple-<%= pkg.version %>.debug.min.js': ['tmp/purple-<%= pkg.version %>.js']
+                    '.grunt-cache/purple-<%= pkg.version %>.debug.min.js': ['.grunt-cache/purple-<%= pkg.version %>.js']
+                }
+            }
+        },
+        
+    
+        copy: {
+            //options: {},
+            main: {
+                files: {
+                    'dist/purple.js': ['.grunt-cache/purple-<%= pkg.version %>.js'],
+                    'dist/purple.min.js': ['.grunt-cache/purple-<%= pkg.version %>.min.js'],
+                    'dist/purple.debug.min.js': ['.grunt-cache/purple-<%= pkg.version %>.debug.min.js']
                 }
             }
         },
 
+        clean: {
+            all: ['.scss-cache', '.grunt-cache']
+        },
 
         watch: {
             files: ['Gruntfile.js', 'src/**/*.js'],
-            tasks: ['concat', 'uglify']
+            tasks: ['concat', 'uglify', 'copy', 'clean']
         }
 
     });
 
-    grunt.registerTask('build', ['concat', 'uglify'])
+
+    grunt.registerTask('build', ['concat', 'uglify', 'copy', 'clean'])
 
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-contrib-clean');
 
 };

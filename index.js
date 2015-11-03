@@ -1,1 +1,1 @@
-exports = require('./lib/purple.js');
+exports = require('./lib/purple')
