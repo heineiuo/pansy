@@ -1,4 +1,4 @@
-/*! PURPLE.js v0.7.0-alpha 2015-10-28 06:03:03 UTC */
+/*! PURPLE.js v0.7.0 2015-11-03 04:04:06 UTC */
 (function (global) {
 
   if ( typeof define === "function" && define.amd ) {
