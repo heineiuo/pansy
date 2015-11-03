@@ -1,8 +1,8 @@
 {
   "name": "purple.js",
   "author": "http://github.com/heineiuo",
-  "version": "0.7.0-alpha",
-  "description": "A simple router, and flexible controller.",
+  "version": "0.7.0",
+  "description": "A webapp kernel.",
   "devDependencies": {
     "grunt": "latest",
     "grunt-contrib-uglify": "latest",
@@ -10,9 +10,5 @@
     "grunt-contrib-watch": "latest",
     "grunt-contrib-copy": "latest",
     "grunt-contrib-clean": "latest"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:heineiuo/purple.git"
   }
 }
