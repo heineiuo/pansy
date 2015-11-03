@@ -37,18 +37,24 @@ function anchorClick(req, res, next){
     function hrefHandle(value) {
       if (value.substr(0,1) != '#') {
         if (url(location.href).href == url(value).href) {
-          // 拿到处理权,但url相同, 不跳转
           event.preventDefault()
           console.info('相同url默认无操作,如有特殊需求请手动app.go()')
-        } else if( url(location.href).origin() == url(value).origin() &&
-          url(location.href).beforeHash() != url(value).beforeHash()) {
-          // 拿到处理权,并跳转
-          event.preventDefault()
-          console.info('开始解析:' + value)
-          __app.app.go(value, 'push')
+        } else if(url(location.href).beforeHash() == url(value).beforeHash()) {
+          if (url(value).hash == '') {
+            getRight(value)
+          }
+        } else if ( url(location.href).origin() == url(value).origin()) {
+          getRight(value)
         }
       }
 
+    }
+
+    // 拿到处理权,并跳转
+    function getRight(value){
+      event.preventDefault()
+      console.info('开始解析:' + value)
+      __app.app.go(value, 'push')
     }
 
   }, false)

@@ -1,4 +1,4 @@
-purple.Controller = function (){
+function Controller(){
 
   var __stack = {}
 

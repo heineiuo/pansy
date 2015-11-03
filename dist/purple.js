@@ -1,4 +1,4 @@
-/*! PURPLE.js v0.7.0-alpha 2015-10-25 17:28:59 UTC */
+/*! PURPLE.js v0.7.0-alpha 2015-10-28 06:03:03 UTC */
 (function (global) {
 
   if ( typeof define === "function" && define.amd ) {
@@ -50,18 +50,24 @@ function anchorClick(req, res, next){
     function hrefHandle(value) {
       if (value.substr(0,1) != '#') {
         if (url(location.href).href == url(value).href) {
-          // 拿到处理权,但url相同, 不跳转
           event.preventDefault()
           console.info('相同url默认无操作,如有特殊需求请手动app.go()')
-        } else if( url(location.href).origin() == url(value).origin() &&
-          url(location.href).beforeHash() != url(value).beforeHash()) {
-          // 拿到处理权,并跳转
-          event.preventDefault()
-          console.info('开始解析:' + value)
-          __app.app.go(value, 'push')
+        } else if(url(location.href).beforeHash() == url(value).beforeHash()) {
+          if (url(value).hash == '') {
+            getRight(value)
+          }
+        } else if ( url(location.href).origin() == url(value).origin()) {
+          getRight(value)
         }
       }
 
+    }
+
+    // 拿到处理权,并跳转
+    function getRight(value){
+      event.preventDefault()
+      console.info('开始解析:' + value)
+      __app.app.go(value, 'push')
     }
 
   }, false)
@@ -94,22 +100,204 @@ function popstateChange(req, res, next) {
 
   next()
 };
-function errHandleChecker(fn){
-  try{
-    return fn.toString().match(/[A-Z0-9a-z,(\s]*\)/)[0].split(',').length == 4
-  } catch(e){
-    return false
-  }
-};
-function routeChecker(req, path){
+(function(win, doc) {
+  var head = doc.head,
+    devnull = function() {},
+    bundleIdCache = {},
+    bundleResultCache = {},
+    bundleCallbackQueue = {};
 
-  try {
-    return req.filterPath.match(path)[0] == req.filterPath
-  } catch(e){
-    return false
+
+  /**
+   * Subscribe to bundle load event.
+   * @param {string[]} bundleIds - Bundle ids
+   * @param {Function} callbackFn - The callback function
+   */
+  function subscribe(bundleIds, callbackFn) {
+    // listify
+    bundleIds = bundleIds.push ? bundleIds : [bundleIds];
+
+    var depsNotFound = [],
+      i = bundleIds.length,
+      numWaiting = i,
+      fn, bundleId, r, q;
+
+    // define callback function
+    fn = function(bundleId, pathsNotFound) {
+      if (pathsNotFound.length) depsNotFound.push(bundleId);
+
+      numWaiting -= 1;
+      if (numWaiting === 0) callbackFn(depsNotFound);
+    };
+
+    // register callback
+    while (i--) {
+      bundleId = bundleIds[i];
+
+      // execute callback if in result cache
+      r = bundleResultCache[bundleId];
+      if (r) {
+        fn(bundleId, r);
+        continue;
+      }
+
+      // add to callback queue
+      q = bundleCallbackQueue[bundleId] = bundleCallbackQueue[bundleId] || [];
+      q.push(fn);
+    }
   }
 
-};
+
+  /**
+   * Publish bundle load event.
+   * @param {string} bundleId - Bundle id
+   * @param {string[]} pathsNotFound - List of files not found
+   */
+  function publish(bundleId, pathsNotFound) {
+    // exit if id isn't defined
+    if (!bundleId) return;
+
+    var q = bundleCallbackQueue[bundleId];
+
+    // cache result
+    bundleResultCache[bundleId] = pathsNotFound;
+
+    // exit if queue is empty
+    if (!q) return;
+
+    // empty callback queue
+    while (q.length) {
+      q[0](bundleId, pathsNotFound);
+      q.splice(0, 1);
+    }
+  }
+
+
+  /**
+   * Load individual JavaScript file.
+   * @param {string} path - The file path
+   * @param {Function} callbackFn - The callback function
+   */
+  function loadScript(path, callbackFn) {
+    var s = doc.createElement('script');
+
+    s.style = 'text/javascript';
+    s.async = true;
+    s.src = path;
+
+    s.onload = s.onerror = function(ev) {
+      // remove script
+      s.parentNode.removeChild(s);
+
+      // de-reference script
+      s = null;
+
+      // execute callback
+      callbackFn(path, ev.type);
+    };
+
+    // add to document
+    head.appendChild(s);
+  }
+
+
+  /**
+   * Load multiple JavaScript files.
+   * @param {string[]} paths - The file paths
+   * @param {Function} callbackFn - The callback function
+   */
+  function loadScripts(paths, callbackFn) {
+    // listify paths
+    paths = paths.push ? paths : [paths];
+
+    var i = paths.length, numWaiting = i, pathsNotFound = [], fn;
+
+    // define callback function
+    fn = function(path, result) {
+      if (result === 'error') pathsNotFound.push(path);
+
+      numWaiting -= 1;
+      if (numWaiting === 0) callbackFn(pathsNotFound);
+    };
+
+    // load scripts
+    while (i--) loadScript(paths[i], fn);
+  }
+
+
+  /**
+   * Initiate script load and register bundle.
+   * @param {(string|string[])} paths - The file paths
+   * @param {(string|Function)} [arg1] - The bundleId or success callback
+   * @param {Function} [arg2] - The success or fail callback
+   * @param {Function} [arg3] - The fail callback
+   */
+  function loadjs(paths, arg1, arg2, arg3) {
+    var bundleId, successFn, failFn;
+
+    // bundleId
+    if (arg1 && !arg1.call) bundleId = arg1;
+
+    // successFn, failFn
+    if (bundleId) successFn = arg2;
+    else successFn = arg1;
+
+    // failFn
+    if (bundleId) failFn = arg3;
+    else failFn = arg2;
+
+    // throw error if bundle is already defined
+    if (bundleId) {
+      if (bundleId in bundleIdCache) {
+        throw new Error("LoadJS: Bundle already defined");
+      } else {
+        bundleIdCache[bundleId] = true;
+      }
+    }
+
+    // load scripts
+    win.setTimeout(function() {
+      loadScripts(paths, function(pathsNotFound) {
+        if (pathsNotFound.length) (failFn || devnull)(pathsNotFound);
+        else (successFn || devnull)();
+
+        // publish bundle load event
+        publish(bundleId, pathsNotFound);
+      });
+    }, 0);  // fires after window 'load' event
+  }
+
+
+  /**
+   * Execute callbacks when dependencies have been satisfied.
+   * @param {(string|string[])} deps - List of bundle ids
+   * @param {Function} [successFn] - Success callback
+   * @param {Function} [failFn] - Fail callback
+   */
+  loadjs.ready = function (deps, successFn, failFn) {
+    // subscribe to bundle load event
+    subscribe(deps, function(depsNotFound) {
+      // execute callbacks
+      if (depsNotFound.length) (failFn || devnull)(depsNotFound);
+      else (successFn || devnull)();
+    });
+
+    return loadjs;
+  };
+
+
+  /**
+   * Manually satisfy bundle dependencies.
+   * @param {string} bundleId - The bundle id
+   */
+  loadjs.done = function done(bundleId) {
+    publish(bundleId, []);
+  };
+
+
+  // export
+  win.loadjs = loadjs;
+})(global, document);;
 
 function url(val){
 
@@ -249,6 +437,52 @@ function clean(arr, del) {
   });
   return result;
 };
+function Router(){
+
+  var __stack = []
+
+  return {
+    __stack: __stack,
+    use: function(fn){
+      __stack.push(fn)
+    },
+
+    route: function(path){
+
+      return {
+        get: function(){
+          var fns = Array.prototype.slice.call(arguments,0)
+          map(fns, function(item, index){
+            __stack.push([path, item])
+          })
+        }
+      }
+    }
+  }
+};
+function Controller(){
+
+  var __stack = {}
+
+  return function (name, fn){
+
+    var isStackExist = typeof __stack[name] != 'undefined'
+
+    if (typeof fn === 'function'){
+      if (isStackExist) console.warn('controller has exits, but this new controller will be registered: '+name)
+      __stack[name] = fn
+    } else if (!isStackExist){
+      console.warn('controller lost fn param, but it still run: '+name)
+      __stack[name] = function(req, res, next) {
+        next()
+      }
+    }
+
+    return __stack[name]
+
+  }
+
+};
 /**
  * Create or return an App.
  *
@@ -259,9 +493,12 @@ var __app = {
   init: false
 }
 
-function purple() {
+
+var purple = function() {
 
   if (__app.init) return __app.app
+
+  // 初始化
 
   // 配置
   __app.conf = {
@@ -290,16 +527,16 @@ function purple() {
   /**
    * Set app config.
    */
-  __app.app.set = function(name, value) {
-    __app.conf[name] = value
+
+  __app.app.config = function(name, value){
+    if (typeof value != 'undefined') {
+      __app.conf[name] = value
+    }
+    return __app.conf[name] || undefined
   }
 
-  __app.app.get = function(name) {
-    if (typeof name != 'undefined') {
-      return __app.conf[name]
-    }
-    return __app.conf
-  }
+  __app.app.set = __app.app.get =__app.app.config // todo deprecated
+
 
   /**
    * Add middleware for app.
@@ -308,7 +545,6 @@ function purple() {
    * @api public
    */
   __app.app.use = function () {
-
 
     if (arguments.length == 1){
 
@@ -332,6 +568,7 @@ function purple() {
             __app.app.use(item[0], item[1])
           } else {
             console.warn('use参数有误')
+            console.warn(item)
           }
         })
 
@@ -341,17 +578,14 @@ function purple() {
         if (arguments[0].__stack instanceof Array) {
           __app.app.use(arguments[0].__stack)
         } else {
-          console.warn('use参数有误')
+          console.warn('use router 时参数有误')
         }
       } else {
-        console.warn('use参数有误')
+        console.warn('use参数异常')
       }
     } else if (arguments.length == 2 ) {
 
       var path = arguments[0]
-      var middleware = {
-        fn: arguments[1]
-      }
 
       if (path instanceof Array) {
         path = new RegExp('(^'+path.join('$)|(^')+'$)')
@@ -363,12 +597,29 @@ function purple() {
         console.error('route参数错误: '+path)
       }
 
-      middleware.path = path
-      middleware.isErrorHandle = errHandleChecker(middleware.fn)
-      __app.stack.push(middleware)
+      __app.stack.push({
+        fn: arguments[1],
+        path: path,
+        isErrorHandel: errHandleChecker(arguments[1])
+      })
 
     }
 
+  }
+
+  /**
+   * Router
+   **/
+
+  __app.app.route = function(path){
+    return {
+      get: function(){
+        var fns = Array.prototype.slice.call(arguments,0)
+        map(fns, function(fn, index){
+          __app.app.use(path, fn)
+        })
+      }
+    }
   }
 
   /**
@@ -388,6 +639,7 @@ function purple() {
     var parsedUrl = url(rawUrl).all()
 
     if (__app.conf.routeByQuery){
+      console.log(parsedUrl.query)
       var filterPath = parsedUrl.query[__app.conf.routeQuery] || '/'
     } else {
       if(parsedUrl.pathname.match(new RegExp('^'+__app.conf.routeScope))){
@@ -395,6 +647,7 @@ function purple() {
       } else {
         var filterPath = '/'
       }
+      parsedUrl.params = clean(filterPath.replace(/^\//,'').split('/'),'')
     }
 
     console.info('请求地址: '+filterPath)
@@ -431,6 +684,7 @@ function purple() {
         console.info('请求结束')
 
         if (__app.conf.spa){
+          console.log('spa: '+ __app.conf.spa)
           if (req.historyStateType == 'replace') {
             history.replaceState('data', 'title', req.rawUrl)
           } else {
@@ -442,7 +696,6 @@ function purple() {
       redirect: function(href) {
         res.end()
         console.log('请求跳转')
-        if (!__app.conf.spa) return location.replace(href)
         __app.app.go(href, 'push')
       }
     }
@@ -520,50 +773,43 @@ function purple() {
   // 返回
   return __app.app
 
-};
-purple.Router = function(){
+}
 
-  var __stack = []
 
-  return {
-    __stack: __stack,
-    use: function(fn){
-      __stack.push(fn)
-    },
+purple.Controller = Controller
+purple.Router = Router
 
-    route: function(path){
+global.require = function(){
 
-      return {
-        get: function(){
-          var fns = Array.prototype.slice.call(arguments,0)
-          map(fns, function(item, index){
-            __stack.push([path, item])
-          })
-        }
-      }
-    }
+  var list = Array.prototype.slice.call(arguments,0)
+  return function(req, res ,next) {
+    loadjs(list, function(){
+      next()
+    }, function(depsNotFound){
+      //if (depsNotFound.indexOf('foo') > -1) {};  // foo failed
+      //if (depsNotFound.indexOf('bar') > -1) {};  // bar failed
+      //if (depsNotFound.indexOf('thunk') > -1) {};  // thunk failed
+      next(depsNotFound)
+    })
   }
-};
-purple.Controller = function (){
 
-  var __stack = {}
+}
 
-  return function (name, fn){
 
-    var isStackExist = typeof __stack[name] != 'undefined'
+function errHandleChecker(fn){
+  try{
+    return fn.toString().match(/[A-Z0-9a-z,(\s]*\)/)[0].split(',').length == 4
+  } catch(e){
+    return false
+  }
+}
 
-    if (typeof fn === 'function'){
-      if (isStackExist) console.warn('controller has exits, but this new controller will be registered: '+name)
-      __stack[name] = fn
-    } else if (!isStackExist){
-      console.warn('controller lost fn param, but it still run: '+name)
-      __stack[name] = function(req, res, next) {
-        next()
-      }
-    }
+function routeChecker(req, path){
 
-    return __stack[name]
-
+  try {
+    return req.filterPath.match(path)[0] == req.filterPath
+  } catch(e){
+    return false
   }
 
 };

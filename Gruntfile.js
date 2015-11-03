@@ -17,9 +17,9 @@ module.exports = function(grunt) {
                         "src/wrap/wrap.head",
                         "src/middleware/**/*.js",
                         "src/util/**/*.js",
-                        "src/core.js",
                         "src/Router.js",
                         "src/Controller.js",
+                        "src/core.js",
                         "src/wrap/wrap.foot"
                     ]
                 }
@@ -62,9 +62,9 @@ module.exports = function(grunt) {
             //options: {},
             main: {
                 files: {
-                    'dist/purple-<%= pkg.version %>.js': ['.grunt-cache/purple-<%= pkg.version %>.js'],
-                    'dist/purple-<%= pkg.version %>.min.js': ['.grunt-cache/purple-<%= pkg.version %>.min.js'],
-                    'dist/purple-<%= pkg.version %>.debug.min.js': ['.grunt-cache/purple-<%= pkg.version %>.debug.min.js']
+                    'dist/purple.js': ['.grunt-cache/purple-<%= pkg.version %>.js'],
+                    'dist/purple.min.js': ['.grunt-cache/purple-<%= pkg.version %>.min.js'],
+                    'dist/purple.debug.min.js': ['.grunt-cache/purple-<%= pkg.version %>.debug.min.js']
                 }
             }
         },

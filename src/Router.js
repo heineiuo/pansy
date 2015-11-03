@@ -1,4 +1,4 @@
-purple.Router = function(){
+function Router(){
 
   var __stack = []
 

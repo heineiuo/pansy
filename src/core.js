@@ -8,9 +8,12 @@ var __app = {
   init: false
 }
 
-function purple() {
+
+var purple = function() {
 
   if (__app.init) return __app.app
+
+  // 初始化
 
   // 配置
   __app.conf = {
@@ -39,16 +42,16 @@ function purple() {
   /**
    * Set app config.
    */
-  __app.app.set = function(name, value) {
-    __app.conf[name] = value
+
+  __app.app.config = function(name, value){
+    if (typeof value != 'undefined') {
+      __app.conf[name] = value
+    }
+    return __app.conf[name] || undefined
   }
 
-  __app.app.get = function(name) {
-    if (typeof name != 'undefined') {
-      return __app.conf[name]
-    }
-    return __app.conf
-  }
+  __app.app.set = __app.app.get =__app.app.config // todo deprecated
+
 
   /**
    * Add middleware for app.
@@ -57,7 +60,6 @@ function purple() {
    * @api public
    */
   __app.app.use = function () {
-
 
     if (arguments.length == 1){
 
@@ -81,6 +83,7 @@ function purple() {
             __app.app.use(item[0], item[1])
           } else {
             console.warn('use参数有误')
+            console.warn(item)
           }
         })
 
@@ -90,17 +93,14 @@ function purple() {
         if (arguments[0].__stack instanceof Array) {
           __app.app.use(arguments[0].__stack)
         } else {
-          console.warn('use参数有误')
+          console.warn('use router 时参数有误')
         }
       } else {
-        console.warn('use参数有误')
+        console.warn('use参数异常')
       }
     } else if (arguments.length == 2 ) {
 
       var path = arguments[0]
-      var middleware = {
-        fn: arguments[1]
-      }
 
       if (path instanceof Array) {
         path = new RegExp('(^'+path.join('$)|(^')+'$)')
@@ -112,12 +112,29 @@ function purple() {
         console.error('route参数错误: '+path)
       }
 
-      middleware.path = path
-      middleware.isErrorHandle = errHandleChecker(middleware.fn)
-      __app.stack.push(middleware)
+      __app.stack.push({
+        fn: arguments[1],
+        path: path,
+        isErrorHandel: errHandleChecker(arguments[1])
+      })
 
     }
 
+  }
+
+  /**
+   * Router
+   **/
+
+  __app.app.route = function(path){
+    return {
+      get: function(){
+        var fns = Array.prototype.slice.call(arguments,0)
+        map(fns, function(fn, index){
+          __app.app.use(path, fn)
+        })
+      }
+    }
   }
 
   /**
@@ -137,6 +154,7 @@ function purple() {
     var parsedUrl = url(rawUrl).all()
 
     if (__app.conf.routeByQuery){
+      console.log(parsedUrl.query)
       var filterPath = parsedUrl.query[__app.conf.routeQuery] || '/'
     } else {
       if(parsedUrl.pathname.match(new RegExp('^'+__app.conf.routeScope))){
@@ -144,6 +162,7 @@ function purple() {
       } else {
         var filterPath = '/'
       }
+      parsedUrl.params = clean(filterPath.replace(/^\//,'').split('/'),'')
     }
 
     console.info('请求地址: '+filterPath)
@@ -180,6 +199,7 @@ function purple() {
         console.info('请求结束')
 
         if (__app.conf.spa){
+          console.log('spa: '+ __app.conf.spa)
           if (req.historyStateType == 'replace') {
             history.replaceState('data', 'title', req.rawUrl)
           } else {
@@ -191,7 +211,6 @@ function purple() {
       redirect: function(href) {
         res.end()
         console.log('请求跳转')
-        if (!__app.conf.spa) return location.replace(href)
         __app.app.go(href, 'push')
       }
     }
@@ -268,5 +287,44 @@ function purple() {
   __app.init = true
   // 返回
   return __app.app
+
+}
+
+
+purple.Controller = Controller
+purple.Router = Router
+
+global.require = function(){
+
+  var list = Array.prototype.slice.call(arguments,0)
+  return function(req, res ,next) {
+    loadjs(list, function(){
+      next()
+    }, function(depsNotFound){
+      //if (depsNotFound.indexOf('foo') > -1) {};  // foo failed
+      //if (depsNotFound.indexOf('bar') > -1) {};  // bar failed
+      //if (depsNotFound.indexOf('thunk') > -1) {};  // thunk failed
+      next(depsNotFound)
+    })
+  }
+
+}
+
+
+function errHandleChecker(fn){
+  try{
+    return fn.toString().match(/[A-Z0-9a-z,(\s]*\)/)[0].split(',').length == 4
+  } catch(e){
+    return false
+  }
+}
+
+function routeChecker(req, path){
+
+  try {
+    return req.filterPath.match(path)[0] == req.filterPath
+  } catch(e){
+    return false
+  }
 
 }
