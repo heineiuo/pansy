@@ -1,1 +1,1 @@
-exports = require('./lib/purple')
+exports = require('./dist/purple')
