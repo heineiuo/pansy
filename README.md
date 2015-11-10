@@ -1,11 +1,4 @@
-#PURPLE.js 0.7.0-alpha
-
-## TODO
-
-* Separate history module as a middleware named <code>purple.History()</code>.
-* Separate router module as a middleware named <code>purple.Router()</code>.
-* Enhance <code>req</code>.
-* Make middleware system more robust.
+#PANSY
 
 ## Introduction
 
@@ -15,7 +8,7 @@ But if you need to do something more with purple, you can use middlewires, which
 
 ## Quick Start
 
-    <script src="purple.js"></script>
+    <script src="pansy.js"></script>
 
     <script>
 

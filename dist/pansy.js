@@ -1,4 +1,4 @@
-/*! PURPLE.js v0.7.0 2015-11-03 04:04:06 UTC */
+/*! PURPLE.js v0.7.1 2015-11-10 13:07:26 UTC */
 (function (global) {
 
   if ( typeof define === "function" && define.amd ) {
@@ -6,7 +6,7 @@
       return factory()
     })
   } else {
-    global.purple = factory()
+    global.pansy = factory()
   }
 
   function factory() {
@@ -50,17 +50,25 @@ function anchorClick(req, res, next){
     function hrefHandle(value) {
       if (value.substr(0,1) != '#') {
         if (url(location.href).href == url(value).href) {
-          event.preventDefault()
-          console.info('相同url默认无操作,如有特殊需求请手动app.go()')
+          if (__app.conf.protocol=='file:') {
+            getRight(value)
+          } else {
+            event.preventDefault()
+            console.info('相同url默认无操作,如有特殊需求请手动app.go()')
+          }
         } else if(url(location.href).beforeHash() == url(value).beforeHash()) {
           if (url(value).hash == '') {
             getRight(value)
+          } else {
+            console.log('#2', location.href, value)
           }
         } else if ( url(location.href).origin() == url(value).origin()) {
           getRight(value)
+        } else {
+          console.log('#3', location.href, value)
         }
-      }
 
+      }
     }
 
     // 拿到处理权,并跳转
@@ -436,7 +444,8 @@ function clean(arr, del) {
     }
   });
   return result;
-};
+}
+;
 function Router(){
 
   var __stack = []
@@ -494,7 +503,7 @@ var __app = {
 }
 
 
-var purple = function() {
+var pansy = function() {
 
   if (__app.init) return __app.app
 
@@ -506,7 +515,8 @@ var purple = function() {
     routeByQuery: false,
     routeQuery: 'route', //默认
     routeScope: '',
-    spa: false
+    spa: false,
+    protocol: null
   }
 
   // 状态
@@ -532,11 +542,8 @@ var purple = function() {
     if (typeof value != 'undefined') {
       __app.conf[name] = value
     }
-    return __app.conf[name] || undefined
+    return __app.conf[name].toString() || undefined
   }
-
-  __app.app.set = __app.app.get =__app.app.config // todo deprecated
-
 
   /**
    * Add middleware for app.
@@ -683,7 +690,7 @@ var purple = function() {
         clearTimeout(t)
         console.info('请求结束')
 
-        if (__app.conf.spa){
+        if (__app.conf.spa && __app.conf.protocol != 'file:'){
           console.log('spa: '+ __app.conf.spa)
           if (req.historyStateType == 'replace') {
             history.replaceState('data', 'title', req.rawUrl)
@@ -765,19 +772,22 @@ var purple = function() {
 
   }
 
-  // 默认中间件
+  // 初始化
+
+  __app.app.config('protocol', location.protocol)
+  // 加载默认中间件
   __app.app.use(popstateChange)
   __app.app.use(anchorClick)
-  // 初始化成功
   __app.init = true
-  // 返回
+
+  // 初始化成功, 返回app
   return __app.app
 
 }
 
 
-purple.Controller = Controller
-purple.Router = Router
+pansy.Controller = Controller
+pansy.Router = Router
 
 global.require = function(){
 
@@ -814,7 +824,7 @@ function routeChecker(req, path){
 
 };
 
-  return purple;
+  return pansy;
 
 
 } // END factory

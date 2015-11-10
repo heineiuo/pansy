@@ -13,7 +13,7 @@ module.exports = function(grunt) {
                     banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("UTC:yyyy-mm-dd HH:MM:ss Z") %> */\n'
                 },
                 files: {
-                    '.grunt-cache/purple-<%= pkg.version %>.js': [
+                    '.grunt-cache/pansy-<%= pkg.version %>.js': [
                         "src/wrap/wrap.head",
                         "src/middleware/**/*.js",
                         "src/util/**/*.js",
@@ -41,7 +41,7 @@ module.exports = function(grunt) {
                     banner: '/*! PURPLE.js v<%= pkg.version %> <%= grunt.template.today("UTC:yyyy-mm-dd HH:MM:ss Z") %> */\n'
                 },
                 files: {
-                    '.grunt-cache/purple-<%= pkg.version %>.min.js': ['.grunt-cache/purple-<%= pkg.version %>.js']
+                    '.grunt-cache/pansy-<%= pkg.version %>.min.js': ['.grunt-cache/pansy-<%= pkg.version %>.js']
                 }
             },
 
@@ -52,19 +52,26 @@ module.exports = function(grunt) {
                     '*/\n'
                 },
                 files: {
-                    '.grunt-cache/purple-<%= pkg.version %>.debug.min.js': ['.grunt-cache/purple-<%= pkg.version %>.js']
+                    '.grunt-cache/pansy-<%= pkg.version %>.debug.min.js': ['.grunt-cache/pansy-<%= pkg.version %>.js']
                 }
             }
         },
         
-    
         copy: {
             //options: {},
             main: {
                 files: {
-                    'dist/purple.js': ['.grunt-cache/purple-<%= pkg.version %>.js'],
-                    'dist/purple.min.js': ['.grunt-cache/purple-<%= pkg.version %>.min.js'],
-                    'dist/purple.debug.min.js': ['.grunt-cache/purple-<%= pkg.version %>.debug.min.js']
+                    'dist/pansy.js': ['.grunt-cache/pansy-<%= pkg.version %>.js'],
+                    'dist/pansy.min.js': ['.grunt-cache/pansy-<%= pkg.version %>.min.js'],
+                    'dist/pansy.debug.min.js': ['.grunt-cache/pansy-<%= pkg.version %>.debug.min.js']
+                }
+            },
+
+            libs: {
+                files: {
+                    '../webapp-sdk/libs/pansy/latest/pansy.js': ['.grunt-cache/pansy-<%= pkg.version %>.js'],
+                    '../webapp-sdk/libs/pansy/latest/pansy.min.js': ['.grunt-cache/pansy-<%= pkg.version %>.min.js'],
+                    '../webapp-sdk/libs/pansy/latest/pansy.debug.min.js': ['.grunt-cache/pansy-<%= pkg.version %>.debug.min.js']
                 }
             }
         },

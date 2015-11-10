@@ -1,1 +1,1 @@
-exports = require('./dist/purple')
+exports = require('./dist/pansy')

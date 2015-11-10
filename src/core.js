@@ -9,7 +9,7 @@ var __app = {
 }
 
 
-var purple = function() {
+var pansy = function() {
 
   if (__app.init) return __app.app
 
@@ -21,7 +21,8 @@ var purple = function() {
     routeByQuery: false,
     routeQuery: 'route', //默认
     routeScope: '',
-    spa: false
+    spa: false,
+    protocol: null
   }
 
   // 状态
@@ -47,11 +48,8 @@ var purple = function() {
     if (typeof value != 'undefined') {
       __app.conf[name] = value
     }
-    return __app.conf[name] || undefined
+    return __app.conf[name].toString() || undefined
   }
-
-  __app.app.set = __app.app.get =__app.app.config // todo deprecated
-
 
   /**
    * Add middleware for app.
@@ -198,7 +196,7 @@ var purple = function() {
         clearTimeout(t)
         console.info('请求结束')
 
-        if (__app.conf.spa){
+        if (__app.conf.spa && __app.conf.protocol != 'file:'){
           console.log('spa: '+ __app.conf.spa)
           if (req.historyStateType == 'replace') {
             history.replaceState('data', 'title', req.rawUrl)
@@ -280,19 +278,22 @@ var purple = function() {
 
   }
 
-  // 默认中间件
+  // 初始化
+
+  __app.app.config('protocol', location.protocol)
+  // 加载默认中间件
   __app.app.use(popstateChange)
   __app.app.use(anchorClick)
-  // 初始化成功
   __app.init = true
-  // 返回
+
+  // 初始化成功, 返回app
   return __app.app
 
 }
 
 
-purple.Controller = Controller
-purple.Router = Router
+pansy.Controller = Controller
+pansy.Router = Router
 
 global.require = function(){
 
