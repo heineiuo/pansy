@@ -21,6 +21,7 @@ But if you need to do something more with pansy, you can use middlewires, which 
         // use a middleware
         app.use(function(req, res, next){
             console.log(req.rawUrl)
+            next()
         })
 
         // use a route
