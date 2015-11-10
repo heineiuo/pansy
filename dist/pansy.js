@@ -1,4 +1,4 @@
-/*! PURPLE.js v0.7.1 2015-11-10 13:07:26 UTC */
+/*! PURPLE.js v0.7.2-alpha 2015-11-10 13:27:19 UTC */
 (function (global) {
 
   if ( typeof define === "function" && define.amd ) {
@@ -643,7 +643,7 @@ var pansy = function() {
     /**
      * 解析url
      */
-    var parsedUrl = url(rawUrl).all()
+    var parsedUrl = url(rawUrl||location.href).all()
 
     if (__app.conf.routeByQuery){
       console.log(parsedUrl.query)

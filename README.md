@@ -30,7 +30,7 @@ But if you need to do something more with pansy, you can use middlewires, which 
         })
 
         // after document ready
-        app.go(location.href, 'none')
+        app.go() // or app.go(location.href)
 
     </script>
 

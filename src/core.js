@@ -149,7 +149,7 @@ var pansy = function() {
     /**
      * 解析url
      */
-    var parsedUrl = url(rawUrl).all()
+    var parsedUrl = url(rawUrl||location.href).all()
 
     if (__app.conf.routeByQuery){
       console.log(parsedUrl.query)
