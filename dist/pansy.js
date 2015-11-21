@@ -1,4 +1,4 @@
-/*! PURPLE.js v0.7.2-alpha 2015-11-10 13:27:19 UTC */
+/*! PURPLE.js v0.7.2-alpha 2015-11-12 14:37:25 UTC */
 (function (global) {
 
   if ( typeof define === "function" && define.amd ) {
@@ -703,7 +703,11 @@ var pansy = function() {
       redirect: function(href) {
         res.end()
         console.log('请求跳转')
-        __app.app.go(href, 'push')
+        if (__app.conf.spa) {
+          __app.app.go(href, 'push')
+        } else {
+          location.replace(href)
+        }
       }
     }
 

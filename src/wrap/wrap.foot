@@ -1,7 +1,0 @@
-
-  return pansy;
-
-
-} // END factory
-
-})(this);

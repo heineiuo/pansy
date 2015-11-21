@@ -1,4 +1,4 @@
-function Router(){
+pansy.Route = function(){
 
   var __stack = []
 

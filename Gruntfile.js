@@ -14,13 +14,11 @@ module.exports = function(grunt) {
                 },
                 files: {
                     '.grunt-cache/pansy-<%= pkg.version %>.js': [
-                        "src/wrap/wrap.head",
+                        "src/wrap/a.js_",
                         "src/middleware/**/*.js",
-                        "src/util/**/*.js",
-                        "src/Router.js",
-                        "src/Controller.js",
+                        "src/addons/**/*.js",
                         "src/core.js",
-                        "src/wrap/wrap.foot"
+                        "src/wrap/z.js_"
                     ]
                 }
             }

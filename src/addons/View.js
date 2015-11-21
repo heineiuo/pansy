@@ -1,0 +1,3 @@
+pansy.ViewClass = function(){
+
+}

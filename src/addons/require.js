@@ -1,9 +1,10 @@
 (function(win, doc) {
-  var head = doc.head,
-    devnull = function() {},
-    bundleIdCache = {},
-    bundleResultCache = {},
-    bundleCallbackQueue = {};
+
+  var head = doc.head
+  var devnull = function() {}
+  var bundleIdCache = {}
+  var bundleResultCache = {}
+  var bundleCallbackQueue = {}
 
 
   /**
@@ -195,4 +196,29 @@
 
   // export
   win.loadjs = loadjs;
-})(global, document);
+
+  // CMD
+  win.require = function(path){
+    return bundleResultCache[path]
+  }
+
+  // 中间件
+  win.require.middleware = function(){
+
+    var list = Array.prototype.slice.call(arguments,0)
+    return function(req, res ,next) {
+      loadjs(list, function(){
+        next()
+      }, function(depsNotFound){
+        //if (depsNotFound.indexOf('foo') > -1) {};  // foo failed
+        //if (depsNotFound.indexOf('bar') > -1) {};  // bar failed
+        //if (depsNotFound.indexOf('thunk') > -1) {};  // thunk failed
+        next(depsNotFound)
+      })
+    }
+
+  }
+
+
+
+})(window, document);

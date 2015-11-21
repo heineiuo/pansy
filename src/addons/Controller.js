@@ -1,4 +1,4 @@
-function Controller(){
+pansy.Controller = function (){
 
   var __stack = {}
 
