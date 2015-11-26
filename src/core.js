@@ -27,18 +27,22 @@
     g.pansy = pansy
   }
 
-  var __app = {
-    init: false
+  var pansy = {
+
   }
 
-  function pansy() {
+  pansy.createApp = function(){
 
-    if (__app.init) return __app.app
+  }
+
+  function createApp() {
+
+    var app = {}
 
     // 初始化
 
     // 配置
-    __app.conf = {
+    app.conf = {
       timeout: 60000, // 一分钟
       routeByQuery: false,
       routeQuery: 'route', //默认
@@ -48,7 +52,7 @@
     }
 
     // 状态
-    __app.state = {
+    app.state = {
       complete: true,
       prevUrl: null,
       curUrl: location.href,
@@ -56,21 +60,21 @@
     }
 
     // 中间件集合
-    __app.stack = []
+    app.stack = []
 
 
     // 返回app及接口
-    __app.app = {}
+    app.app = {}
 
     /**
      * Set app config.
      */
 
-    __app.app.config = function(name, value){
+    app.app.config = function(name, value){
       if (typeof value != 'undefined') {
-        __app.conf[name] = value
+        app.conf[name] = value
       }
-      return __app.conf[name].toString() || undefined
+      return app.conf[name].toString() || undefined
     }
 
     /**
@@ -79,7 +83,7 @@
      * @param fn
      * @api public
      */
-    __app.app.use = function () {
+    app.app.use = function () {
 
       if (arguments.length == 1){
 
@@ -89,7 +93,7 @@
             fn: arguments[0]
           }
           middleware.isErrorHandle = errHandleChecker(middleware.fn)
-          __app.stack.push(middleware)
+          app.stack.push(middleware)
 
         // 注册模块
         } else if (arguments[0] instanceof Array) {
@@ -98,9 +102,9 @@
 
           map(arr, function(item, index){
             if (typeof item === 'function'){
-              __app.app.use(item)
+              app.app.use(item)
             } else if (item instanceof Array && item.length ==2) {
-              __app.app.use(item[0], item[1])
+              app.app.use(item[0], item[1])
             } else {
               console.warn('use参数有误')
               console.warn(item)
@@ -111,7 +115,7 @@
         } else if (arguments[0] instanceof Object) {
 
           if (arguments[0].__stack instanceof Array) {
-            __app.app.use(arguments[0].__stack)
+            app.app.use(arguments[0].__stack)
           } else {
             console.warn('use router 时参数有误')
           }
@@ -132,7 +136,7 @@
           console.error('route参数错误: '+path)
         }
 
-        __app.stack.push({
+        app.stack.push({
           fn: arguments[1],
           path: path,
           isErrorHandel: errHandleChecker(arguments[1])
@@ -146,12 +150,12 @@
      * Router
      **/
 
-    __app.app.route = function(path){
+    app.app.route = function(path){
       return {
         get: function(){
           var fns = Array.prototype.slice.call(arguments,0)
           map(fns, function(fn, index){
-            __app.app.use(path, fn)
+            app.app.use(path, fn)
           })
         }
       }
@@ -163,22 +167,22 @@
      * @param {string} type
      * @api public
      */
-    __app.app.go = function(rawUrl, type){
+    app.app.go = function(rawUrl, type){
 
-      if (!__app.state.complete) return false
-      __app.state.complete = false
+      if (!app.state.complete) return false
+      app.state.complete = false
 
       /**
        * 解析url
        */
       var parsedUrl = url(rawUrl||location.href).all()
 
-      if (__app.conf.routeByQuery){
+      if (app.conf.routeByQuery){
         console.log(parsedUrl.query)
-        var filterPath = parsedUrl.query[__app.conf.routeQuery] || '/'
+        var filterPath = parsedUrl.query[app.conf.routeQuery] || '/'
       } else {
-        if(parsedUrl.pathname.match(new RegExp('^'+__app.conf.routeScope))){
-          var filterPath = parsedUrl.pathname.substr(__app.conf.routeScope.length) || '/'
+        if(parsedUrl.pathname.match(new RegExp('^'+app.conf.routeScope))){
+          var filterPath = parsedUrl.pathname.substr(app.conf.routeScope.length) || '/'
         } else {
           var filterPath = '/'
         }
@@ -190,16 +194,16 @@
       var t = setTimeout(function(){
         res.end()
         console.warn('超时')
-      }, __app.conf.timeout)
+      }, app.conf.timeout)
 
       /**
        * 封装请求
        */
       var req = extend(parsedUrl, {
         routed: false,
-        expire: Date.now() + __app.conf.timeout,
-        conf: __app.conf,
-        state: __app.state,
+        expire: Date.now() + app.conf.timeout,
+        conf: app.conf,
+        state: app.state,
         filterPath: filterPath,
         rawUrl: rawUrl, // 原始请求连接
         historyStateType: type || 'push' // 堆栈方式,默认是push
@@ -213,13 +217,13 @@
       var res = {
         end: function () {
           end = true
-          __app.state.complete = true
-          __app.state.errorStack = null
+          app.state.complete = true
+          app.state.errorStack = null
           clearTimeout(t)
           console.info('请求结束')
 
-          if (__app.conf.spa && __app.conf.protocol != 'file:'){
-            console.log('spa: '+ __app.conf.spa)
+          if (app.conf.spa && app.conf.protocol != 'file:'){
+            console.log('spa: '+ app.conf.spa)
             if (req.historyStateType == 'replace') {
               history.replaceState('data', 'title', req.rawUrl)
             } else {
@@ -231,8 +235,8 @@
         redirect: function(href) {
           res.end()
           console.log('请求跳转')
-          if (__app.conf.spa) {
-            __app.app.go(href, 'push')
+          if (app.conf.spa) {
+            app.app.go(href, 'push')
           } else {
             location.replace(href)
           }
@@ -251,17 +255,17 @@
 
         // 错误堆栈
         if (typeof err != 'undefined'){
-          if (!__app.state.errorStack){
-            __app.state.errorStack = []
+          if (!app.state.errorStack){
+            app.state.errorStack = []
           }
-          __app.state.errorStack.push(err)
+          app.state.errorStack.push(err)
         }
 
         // 检查指针
-        if(index >= __app.stack.length) {
+        if(index >= app.stack.length) {
           // 错误检查
-          if (__app.state.errorStack){
-            console.error(__app.state.errorStack)
+          if (app.state.errorStack){
+            console.error(app.state.errorStack)
           }
           // 404 检查
           if (!req.routed){
@@ -270,12 +274,12 @@
           res.end()
         } else {
           // 检查失效层
-          if (typeof __app.stack[index].disabled != 'undefined'){
+          if (typeof app.stack[index].disabled != 'undefined'){
             next()
           } else {
             // 检查路由
-            if (typeof __app.stack[index].path != 'undefined') {
-              if (!routeChecker(req, __app.stack[index].path)){
+            if (typeof app.stack[index].path != 'undefined') {
+              if (!routeChecker(req, app.stack[index].path)){
                 // 不匹配
                 next()
               } else {
@@ -287,10 +291,10 @@
             }
             // 区分错误处理层
             function errCheck(){
-              if (__app.stack[index].isErrorHandle) {
-                __app.stack[index].fn(__app.state.errorStack, req, res, next)
+              if (app.stack[index].isErrorHandle) {
+                app.stack[index].fn(app.state.errorStack, req, res, next)
               } else {
-                __app.stack[index].fn(req, res, next)
+                app.stack[index].fn(req, res, next)
               }
             }
           }
@@ -305,22 +309,18 @@
     }
 
     // 初始化
-
-    __app.app.config('protocol', location.protocol)
+    app.app.config('protocol', location.protocol)
     // 加载默认中间件
-    __app.app.use(popstateChange)
-    __app.app.use(anchorClick)
-    __app.init = true
+    app.app.use(popstateChange)
+    app.app.use(anchorClick)
 
     // 初始化成功, 返回app
-    return __app.app
+    return app.app
 
   }
 
-
-
   function errHandleChecker(fn){
-    try{
+    try {
       return fn.toString().match(/[A-Z0-9a-z,(\s]*\)/)[0].split(',').length == 4
     } catch(e){
       return false
@@ -328,16 +328,12 @@
   }
 
   function routeChecker(req, path){
-
     try {
       return req.filterPath.match(path)[0] == req.filterPath
     } catch(e){
       return false
     }
-
   }
-
-
 
   function url(val){
 

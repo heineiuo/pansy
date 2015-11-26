@@ -1,7 +1,7 @@
 /**
  * 监听浏览器的popstate change
  */
-function popstateChange(req, res, next) {
+function handlePopState (req, res, next) {
 
   if (typeof this.disabled != 'undefined') return next()
 

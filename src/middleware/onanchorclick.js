@@ -4,7 +4,7 @@
  * @param callback
  */
 
-function anchorClick(req, res, next){
+function handleAnchorClick(req, res, next){
 
   if (typeof this.disabled != 'undefined') return next()
 
