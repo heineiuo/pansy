@@ -14,11 +14,8 @@ module.exports = function(grunt) {
                 },
                 files: {
                     '.grunt-cache/pansy-<%= pkg.version %>.js': [
-                        "src/wrap/a.js_",
-                        "src/middleware/**/*.js",
-                        "src/addons/**/*.js",
                         "src/core.js",
-                        "src/wrap/z.js_"
+                        "src/addons/**/*.js"
                     ]
                 }
             }

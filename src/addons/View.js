@@ -1,3 +1,7 @@
-pansy.ViewClass = function(){
+pansy.createClass = function(){
+
+}
+
+pansy.render = function(){
 
 }
