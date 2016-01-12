@@ -28,14 +28,13 @@
       this.__pluginApps[conf.pluginName] = createApp(conf)
       return this.__pluginApps[conf.pluginName]
     },
-    Router: function(){
+    createRouter: function(){
       var __stack = []
       return {
         __stack: __stack,
         use: function(fn){
           __stack.push(fn)
         },
-
         route: function(path){
           return {
             get: function(){
@@ -50,85 +49,16 @@
     }
   }
 
+  pansy.Plugin = pansy.createPlugin
+  pansy.Main = pansy.createMain
+  pansy.Master = pansy.createMain
+  pansy.Router = pansy.createRouter
+
   if (!Date.now) {
     Date.now = function now() {
       return new Date().getTime();
     };
   }
-  //
-  //(function() {
-  //  if (!Event.prototype.preventDefault) {
-  //    Event.prototype.preventDefault=function() {
-  //      this.returnValue=false;
-  //    };
-  //  }
-  //  if (!Event.prototype.stopPropagation) {
-  //    Event.prototype.stopPropagation=function() {
-  //      this.cancelBubble=true;
-  //    };
-  //  }
-  //  if (!Element.prototype.addEventListener) {
-  //    var eventListeners=[];
-  //
-  //    var addEventListener=function(type,listener /*, useCapture (will be ignored) */) {
-  //      var self=this;
-  //      var wrapper=function(e) {
-  //        e.target=e.srcElement;
-  //        e.currentTarget=self;
-  //        if (typeof listener.handleEvent != 'undefined') {
-  //          listener.handleEvent(e);
-  //        } else {
-  //          listener.call(self,e);
-  //        }
-  //      };
-  //      if (type=="DOMContentLoaded") {
-  //        var wrapper2=function(e) {
-  //          if (document.readyState=="complete") {
-  //            wrapper(e);
-  //          }
-  //        };
-  //        document.attachEvent("onreadystatechange",wrapper2);
-  //        eventListeners.push({object:this,type:type,listener:listener,wrapper:wrapper2});
-  //
-  //        if (document.readyState=="complete") {
-  //          var e=new Event();
-  //          e.srcElement=window;
-  //          wrapper2(e);
-  //        }
-  //      } else {
-  //        this.attachEvent("on"+type,wrapper);
-  //        eventListeners.push({object:this,type:type,listener:listener,wrapper:wrapper});
-  //      }
-  //    };
-  //    var removeEventListener=function(type,listener /*, useCapture (will be ignored) */) {
-  //      var counter=0;
-  //      while (counter<eventListeners.length) {
-  //        var eventListener=eventListeners[counter];
-  //        if (eventListener.object==this && eventListener.type==type && eventListener.listener==listener) {
-  //          if (type=="DOMContentLoaded") {
-  //            this.detachEvent("onreadystatechange",eventListener.wrapper);
-  //          } else {
-  //            this.detachEvent("on"+type,eventListener.wrapper);
-  //          }
-  //          eventListeners.splice(counter, 1);
-  //          break;
-  //        }
-  //        ++counter;
-  //      }
-  //    };
-  //    Element.prototype.addEventListener=addEventListener;
-  //    Element.prototype.removeEventListener=removeEventListener;
-  //    if (HTMLDocument) {
-  //      HTMLDocument.prototype.addEventListener=addEventListener;
-  //      HTMLDocument.prototype.removeEventListener=removeEventListener;
-  //    }
-  //    if (Window) {
-  //      Window.prototype.addEventListener=addEventListener;
-  //      Window.prototype.removeEventListener=removeEventListener;
-  //    }
-  //  }
-  //})();
-  //document.addEventListener('click', anchorClickHandle, false)
 
   if(typeof window.onpopstate != 'undefined') {
     window.addEventListener('popstate', popstateHandle, false)
@@ -141,6 +71,8 @@
   } else {
     document.onclick = anchorClickHandle;
   }
+
+
 
   function popstateHandle(event) {
     if (pansy.__mainAppInit) {
@@ -156,7 +88,6 @@
   }
 
   function anchorClickHandle (event) {
-
     if (pansy.__mainAppInit) {
       if (pansy.__mainApp.state.spa){
         closestHref(event.target)
@@ -171,7 +102,6 @@
      * @api private
      */
     function closestHref(dom) {
-
       if (dom != document.body && dom != null) {
         if (dom.nodeName == 'A') {
           if (typeof dom.attributes.href != 'undefined') {
@@ -223,6 +153,7 @@
         var hashes = hash.split('/')
         if (hashes.length>1) {
           if (typeof pansy.__pluginApps[hashes[1]] != 'undefined'){
+            event.preventDefault()
             pansy.__pluginApps[hashes[1]].go(value, 'replace')
           }
         }
@@ -355,7 +286,7 @@
 
       /**
        * Core method. Change the route state.
-       * @param {string} href
+       * @param {string} rawUrl
        * @param {string} type
        * @api public
        */
