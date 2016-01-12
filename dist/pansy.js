@@ -1,4 +1,4 @@
-/*! PURPLE.js v0.7.2-alpha 2015-12-01 04:00:40 UTC */
+/*! PURPLE.js v0.7.2-alpha 2016-01-08 07:54:35 UTC */
 /**
  * Create or return an App.
  *
@@ -28,28 +28,138 @@
       conf.isPlugin = true
       this.__pluginApps[conf.pluginName] = createApp(conf)
       return this.__pluginApps[conf.pluginName]
+    },
+    Router: function(){
+      var __stack = []
+      return {
+        __stack: __stack,
+        use: function(fn){
+          __stack.push(fn)
+        },
+
+        route: function(path){
+          return {
+            get: function(){
+              var fns = Array.prototype.slice.call(arguments,0)
+              map(fns, function(item, index){
+                __stack.push([path, item])
+              })
+            }
+          }
+        }
+      }
     }
   }
 
+  if (!Date.now) {
+    Date.now = function now() {
+      return new Date().getTime();
+    };
+  }
+  //
+  //(function() {
+  //  if (!Event.prototype.preventDefault) {
+  //    Event.prototype.preventDefault=function() {
+  //      this.returnValue=false;
+  //    };
+  //  }
+  //  if (!Event.prototype.stopPropagation) {
+  //    Event.prototype.stopPropagation=function() {
+  //      this.cancelBubble=true;
+  //    };
+  //  }
+  //  if (!Element.prototype.addEventListener) {
+  //    var eventListeners=[];
+  //
+  //    var addEventListener=function(type,listener /*, useCapture (will be ignored) */) {
+  //      var self=this;
+  //      var wrapper=function(e) {
+  //        e.target=e.srcElement;
+  //        e.currentTarget=self;
+  //        if (typeof listener.handleEvent != 'undefined') {
+  //          listener.handleEvent(e);
+  //        } else {
+  //          listener.call(self,e);
+  //        }
+  //      };
+  //      if (type=="DOMContentLoaded") {
+  //        var wrapper2=function(e) {
+  //          if (document.readyState=="complete") {
+  //            wrapper(e);
+  //          }
+  //        };
+  //        document.attachEvent("onreadystatechange",wrapper2);
+  //        eventListeners.push({object:this,type:type,listener:listener,wrapper:wrapper2});
+  //
+  //        if (document.readyState=="complete") {
+  //          var e=new Event();
+  //          e.srcElement=window;
+  //          wrapper2(e);
+  //        }
+  //      } else {
+  //        this.attachEvent("on"+type,wrapper);
+  //        eventListeners.push({object:this,type:type,listener:listener,wrapper:wrapper});
+  //      }
+  //    };
+  //    var removeEventListener=function(type,listener /*, useCapture (will be ignored) */) {
+  //      var counter=0;
+  //      while (counter<eventListeners.length) {
+  //        var eventListener=eventListeners[counter];
+  //        if (eventListener.object==this && eventListener.type==type && eventListener.listener==listener) {
+  //          if (type=="DOMContentLoaded") {
+  //            this.detachEvent("onreadystatechange",eventListener.wrapper);
+  //          } else {
+  //            this.detachEvent("on"+type,eventListener.wrapper);
+  //          }
+  //          eventListeners.splice(counter, 1);
+  //          break;
+  //        }
+  //        ++counter;
+  //      }
+  //    };
+  //    Element.prototype.addEventListener=addEventListener;
+  //    Element.prototype.removeEventListener=removeEventListener;
+  //    if (HTMLDocument) {
+  //      HTMLDocument.prototype.addEventListener=addEventListener;
+  //      HTMLDocument.prototype.removeEventListener=removeEventListener;
+  //    }
+  //    if (Window) {
+  //      Window.prototype.addEventListener=addEventListener;
+  //      Window.prototype.removeEventListener=removeEventListener;
+  //    }
+  //  }
+  //})();
+  //document.addEventListener('click', anchorClickHandle, false)
+
   if(typeof window.onpopstate != 'undefined') {
-    window.addEventListener('popstate', function (event) {
-      if (pansy.__mainAppInit) {
-        var app = pansy.__mainApp
-        if (app.state.spa) {
-          if (url(app.state.curUrl).beforeHash() != url(location.href).beforeHash()){
-            // 拿到处理权
-            app.go(location.href, 'replace')
-          }
-          // 交出处理权
-        }
-      }
-    }, false)
+    window.addEventListener('popstate', popstateHandle, false)
   }
 
-  document.addEventListener('click', function (event) {
+  if (typeof document.addEventListener != 'undefined') {
+    document.addEventListener('click', anchorClickHandle, false)
+  } else if (typeof document.attachEvent != 'undefined') {
+    document.attachEvent('onclick', anchorClickHandle)
+  } else {
+    document.onclick = anchorClickHandle;
+  }
+
+  function popstateHandle(event) {
+    if (pansy.__mainAppInit) {
+      var app = pansy.__mainApp
+      if (app.state.spa) {
+        if (url(app.state.curUrl).beforeHash() != url(location.href).beforeHash()){
+          // 拿到处理权
+          app.go(location.href, 'replace')
+        }
+        // 交出处理权
+      }
+    }
+  }
+
+  function anchorClickHandle (event) {
 
     if (pansy.__mainAppInit) {
-      if (pansy.__mainApp.conf.spa){
+      if (pansy.__mainApp.state.spa){
         closestHref(event.target)
       }
     } else if (pansy.__hasPlugins){
@@ -127,7 +237,7 @@
       pansy.__mainApp.go(value, 'push')
     }
 
-  }, false)
+  }
 
   function createApp(conf) {
 
@@ -150,6 +260,8 @@
       stack: [],
 
       set: function (name, value) {
+        var app = this
+
         if (typeof value != 'undefined') {
           app.state[name] = value
         }
@@ -283,7 +395,7 @@
          */
         var req = extend(parsedUrl, {
           routed: false,
-          expire: Date.now() + app.state.timeout,
+          expire: new Date().getTime() + app.state.timeout,
           conf: app.state,
           state: app.state,
           historyStateType: type || 'push' // 堆栈方式,默认是push
@@ -590,282 +702,4 @@
   }
 
 })();
-
-;
-pansy.Controller = function (){
-
-  var __stack = {}
-
-  return function (name, fn){
-
-    var isStackExist = typeof __stack[name] != 'undefined'
-
-    if (typeof fn === 'function'){
-      if (isStackExist) console.warn('controller has exits, but this new controller will be registered: '+name)
-      __stack[name] = fn
-    } else if (!isStackExist){
-      console.warn('controller lost fn param, but it still run: '+name)
-      __stack[name] = function(req, res, next) {
-        next()
-      }
-    }
-
-    return __stack[name]
-
-  }
-
-};
-pansy.Router = function(){
-
-  var __stack = []
-
-  return {
-    __stack: __stack,
-    use: function(fn){
-      __stack.push(fn)
-    },
-
-    route: function(path){
-
-      return {
-        get: function(){
-          var fns = Array.prototype.slice.call(arguments,0)
-          map(fns, function(item, index){
-            __stack.push([path, item])
-          })
-        }
-      }
-    }
-  }
-};
-pansy.createClass = function(){
-
-}
-
-pansy.render = function(){
-
-};
-
-var win = window
-var doc = document
-var head = doc.head
-var devnull = function() {}
-var bundleIdCache = {}
-var bundleResultCache = {}
-var bundleCallbackQueue = {}
-
-
-/**
- * Subscribe to bundle load event.
- * @param {string[]} bundleIds - Bundle ids
- * @param {Function} callbackFn - The callback function
- */
-function subscribe(bundleIds, callbackFn) {
-  // listify
-  bundleIds = bundleIds.push ? bundleIds : [bundleIds];
-
-  var depsNotFound = [],
-    i = bundleIds.length,
-    numWaiting = i,
-    fn, bundleId, r, q;
-
-  // define callback function
-  fn = function(bundleId, pathsNotFound) {
-    if (pathsNotFound.length) depsNotFound.push(bundleId);
-
-    numWaiting -= 1;
-    if (numWaiting === 0) callbackFn(depsNotFound);
-  };
-
-  // register callback
-  while (i--) {
-    bundleId = bundleIds[i];
-
-    // execute callback if in result cache
-    r = bundleResultCache[bundleId];
-    if (r) {
-      fn(bundleId, r);
-      continue;
-    }
-
-    // add to callback queue
-    q = bundleCallbackQueue[bundleId] = bundleCallbackQueue[bundleId] || [];
-    q.push(fn);
-  }
-}
-
-
-/**
- * Publish bundle load event.
- * @param {string} bundleId - Bundle id
- * @param {string[]} pathsNotFound - List of files not found
- */
-function publish(bundleId, pathsNotFound) {
-  // exit if id isn't defined
-  if (!bundleId) return;
-
-  var q = bundleCallbackQueue[bundleId];
-
-  // cache result
-  bundleResultCache[bundleId] = pathsNotFound;
-
-  // exit if queue is empty
-  if (!q) return;
-
-  // empty callback queue
-  while (q.length) {
-    q[0](bundleId, pathsNotFound);
-    q.splice(0, 1);
-  }
-}
-
-
-/**
- * Load individual JavaScript file.
- * @param {string} path - The file path
- * @param {Function} callbackFn - The callback function
- */
-function loadScript(path, callbackFn) {
-  var s = doc.createElement('script');
-
-  s.style = 'text/javascript';
-  s.async = true;
-  s.src = path;
-
-  s.onload = s.onerror = function(ev) {
-    // remove script
-    s.parentNode.removeChild(s);
-
-    // de-reference script
-    s = null;
-
-    // execute callback
-    callbackFn(path, ev.type);
-  };
-
-  // add to document
-  head.appendChild(s);
-}
-
-
-/**
- * Load multiple JavaScript files.
- * @param {string[]} paths - The file paths
- * @param {Function} callbackFn - The callback function
- */
-function loadScripts(paths, callbackFn) {
-  // listify paths
-  paths = paths.push ? paths : [paths];
-
-  var i = paths.length, numWaiting = i, pathsNotFound = [], fn;
-
-  // define callback function
-  fn = function(path, result) {
-    if (result === 'error') pathsNotFound.push(path);
-
-    numWaiting -= 1;
-    if (numWaiting === 0) callbackFn(pathsNotFound);
-  };
-
-  // load scripts
-  while (i--) loadScript(paths[i], fn);
-}
-
-
-/**
- * Initiate script load and register bundle.
- * @param {(string|string[])} paths - The file paths
- * @param {(string|Function)} [arg1] - The bundleId or success callback
- * @param {Function} [arg2] - The success or fail callback
- * @param {Function} [arg3] - The fail callback
- */
-function loadjs(paths, arg1, arg2, arg3) {
-  var bundleId, successFn, failFn;
-
-  // bundleId
-  if (arg1 && !arg1.call) bundleId = arg1;
-
-  // successFn, failFn
-  if (bundleId) successFn = arg2;
-  else successFn = arg1;
-
-  // failFn
-  if (bundleId) failFn = arg3;
-  else failFn = arg2;
-
-  // throw error if bundle is already defined
-  if (bundleId) {
-    if (bundleId in bundleIdCache) {
-      throw new Error("LoadJS: Bundle already defined");
-    } else {
-      bundleIdCache[bundleId] = true;
-    }
-  }
-
-  // load scripts
-  win.setTimeout(function() {
-    loadScripts(paths, function(pathsNotFound) {
-      if (pathsNotFound.length) (failFn || devnull)(pathsNotFound);
-      else (successFn || devnull)();
-
-      // publish bundle load event
-      publish(bundleId, pathsNotFound);
-    });
-  }, 0);  // fires after window 'load' event
-}
-
-
-/**
- * Execute callbacks when dependencies have been satisfied.
- * @param {(string|string[])} deps - List of bundle ids
- * @param {Function} [successFn] - Success callback
- * @param {Function} [failFn] - Fail callback
- */
-loadjs.ready = function (deps, successFn, failFn) {
-  // subscribe to bundle load event
-  subscribe(deps, function(depsNotFound) {
-    // execute callbacks
-    if (depsNotFound.length) (failFn || devnull)(depsNotFound);
-    else (successFn || devnull)();
-  });
-
-  return loadjs;
-};
-
-
-/**
- * Manually satisfy bundle dependencies.
- * @param {string} bundleId - The bundle id
- */
-loadjs.done = function done(bundleId) {
-  publish(bundleId, []);
-};
-
-
-// export
-win.loadjs = loadjs;
-
-// CMD
-win.require = function(path){
-  return bundleResultCache[path]
-}
-
-// 中间件
-win.require.middleware = function(){
-
-  var list = Array.prototype.slice.call(arguments,0)
-  return function(req, res ,next) {
-    loadjs(list, function(){
-      next()
-    }, function(depsNotFound){
-      //if (depsNotFound.indexOf('foo') > -1) {};  // foo failed
-      //if (depsNotFound.indexOf('bar') > -1) {};  // bar failed
-      //if (depsNotFound.indexOf('thunk') > -1) {};  // thunk failed
-      next(depsNotFound)
-    })
-  }
-
-}
-
-
 
