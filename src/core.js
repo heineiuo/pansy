@@ -562,16 +562,16 @@
   /**
    * forEach arr and callback(item, index)
    * @param arr
-   * @param fn
+   * @param callback
    */
-  function forEach(arr, fn){
+  function forEach(arr, callback){
     var len = arr.length
-    if (typeof fn != "function"){
+    if (typeof callback != "function"){
       throw new TypeError()
     }
     for (var i = 0; i < len; i++) {
       if (i in arr) {
-        fn.call(arguments[1], arr[i], i, arr)
+        callback.call(arguments[1], arr[i], i, arr)
       }
     }
   }
@@ -583,8 +583,8 @@
    */
   function extend() {
     var result = {};
-    var objs = Array.prototype.slice.call(arguments,0);
-    forEach(objs, function(props, index){
+    var arg2arr = Array.prototype.slice.call(arguments,0);
+    forEach(arg2arr, function(props, index){
       for(var prop in props) {
         if(props.hasOwnProperty(prop)) {
           result[prop] = props[prop]
