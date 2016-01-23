@@ -1,5 +1,5 @@
 {
-  "name": "pansy",
+  "name": "pansy-core",
   "author": "http://github.com/heineiuo",
   "version": "0.7.2-alpha",
   "description": "A webapp kernel.",
