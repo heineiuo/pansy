@@ -355,7 +355,11 @@
 
           redirect: function(rawUrl) {
             res.end()
-            app.go(app.state.routeScope)
+            if (app.state.spa){
+              app.go(app.state.routeScope)
+            } else {
+              location.href = app.state.routeScope + rawUrl
+            }
           }
         }
 
