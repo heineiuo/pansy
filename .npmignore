@@ -8,3 +8,9 @@ Thumb.db
 .grunt
 .sass-cache
 build
+
+src
+demo
+tasks
+Gruntfile.js
+.gitignore

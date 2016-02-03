@@ -1,17 +1,14 @@
 {
-  "name": "pansy-core",
+  "name": "pansy",
   "author": "http://github.com/heineiuo",
-  "version": "0.7.2-alpha",
-  "description": "A webapp kernel.",
+  "version": "0.7.2",
+  "description": "Middleware frame work for the browser",
   "devDependencies": {
+    "webpack": "latest",
     "grunt": "latest",
     "grunt-contrib-uglify": "latest",
-    "grunt-contrib-concat": "latest",
-    "grunt-contrib-watch": "latest",
-    "grunt-contrib-copy": "latest",
-    "grunt-contrib-clean": "latest"
-  },
-  "repository": {
-
+    "grunt-contrib-clean": "latest",
+    "grunt-webpack": "latest",
+    "webpack-dev-server": "latest"
   }
 }

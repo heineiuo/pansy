@@ -376,13 +376,8 @@
          */
         function next(err) {
 
-          if (end) return console.error('Run next() after red.end(), PLS check.')
+          if (end) return console.error('next异常')
           index ++
-
-          // 错误堆栈
-          if (typeof err != 'undefined') {
-            errorStack.push(err)
-          }
 
           // 检查指针
           if(index >= app.stack.length) {
@@ -394,34 +389,33 @@
             if (!req.routed){
               console.error('404 not found')
             }
-            res.end()
-          } else {
-            // 检查失效层
-            if (typeof app.stack[index].disabled != 'undefined'){
-              next()
-            } else {
-              // 检查路由
-              if (typeof app.stack[index].path != 'undefined') {
-                if (!routeChecker(req, app.stack[index].path)){
-                  // 不匹配
-                  next()
-                } else {
-                  req.routed = true
-                  errCheck()
-                }
-              } else {
-                errCheck()
-              }
-              // 区分错误处理层
-              function errCheck(){
-                if (app.stack[index].isErrorHandle) {
-                  app.stack[index].fn(errorStack, req, res, next)
-                } else {
-                  app.stack[index].fn(req, res, next)
-                }
-              }
-            }
+            return res.end()
           }
+
+          // 错误堆栈
+          if (err) errorStack.push(err)
+          // 错误处理
+          if (errorStack.length){
+            if (!app.stack[index].isErrorHandle) return next()
+            app.stack[index].fn(errorStack, req, res, next)
+            return errorStack = []
+          }
+
+          // 检查失效层
+          if (typeof app.stack[index].disabled != 'undefined') return next()
+
+          // 检查路由
+          if (typeof app.stack[index].path != 'undefined') {
+            // 不匹配
+            if (!routeChecker(req, app.stack[index].path)) return next()
+            // 匹配
+            app.stack[index].fn(req, res, next)
+            return req.routed = true
+          }
+
+          // 通用中间件
+          app.stack[index].fn(req, res, next)
+
         }
       }
 
