@@ -1,14 +1,15 @@
 {
   "name": "pansy",
   "author": "http://github.com/heineiuo",
-  "version": "0.7.2",
-  "description": "Middleware frame work for the browser",
+  "version": "0.7.8",
+  "description": "Middleware framework for the browser.",
   "devDependencies": {
-    "webpack": "latest",
     "grunt": "latest",
     "grunt-contrib-uglify": "latest",
-    "grunt-contrib-clean": "latest",
+    "grunt-umd": "^2.3.5",
     "grunt-webpack": "latest",
+    "lodash": "^4.2.0",
+    "webpack": "latest",
     "webpack-dev-server": "latest"
   }
 }
