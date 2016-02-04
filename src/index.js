@@ -210,7 +210,7 @@ function createApp(conf) {
         // 注册普通中间件
         if ( typeof arguments[0] === 'function'){
           var middleware = {
-            fn: arguments[0]
+            fn: arguments[0],
           }
           middleware.isErrorHandle = errHandleChecker(middleware.fn)
           app.stack.push(middleware)
@@ -366,7 +366,7 @@ function createApp(conf) {
        * 开始执行
        */
       var end = false
-      var errorStack = []
+      //var errorStack = null
       var index = -1
       next()
 
@@ -375,30 +375,30 @@ function createApp(conf) {
        */
       function next(err) {
 
-        if (end) return console.error('next异常')
         index ++
 
         // 检查指针
         if(index >= app.stack.length) {
+          // 流程结束, 收尾
           // 错误检查
-          if (errorStack.length){
-            console.error(errorStack)
-          }
+          if (err) console.error(err)
           // 404 检查
-          if (!req.routed){
-            console.error('404 not found')
-          }
+          if (!req.routed) console.error('404 not found')
           return res.end()
         }
 
         // 错误堆栈
-        if (err) errorStack.push(err)
-        // 错误处理
-        if (errorStack.length){
-          if (!app.stack[index].isErrorHandle) return next()
-          app.stack[index].fn(errorStack, req, res, next)
-          return errorStack = []
+        //errorStack = err || null
+        // 检查是否有错误要处理
+        if (err){
+          // 有错误
+          // 跳过普通中间件, 找到错误处理中间件处理错误
+          if (!app.stack[index].isErrorHandle) return next(err)
+          // 错误处理中间件
+          return app.stack[index].fn(err, req, res, next)
         }
+
+        if (app.stack[index].isErrorHandle) return next()
 
         // 检查失效层
         if (typeof app.stack[index].disabled != 'undefined') return next()
@@ -408,12 +408,21 @@ function createApp(conf) {
           // 不匹配
           if (!routeChecker(req, app.stack[index].path)) return next()
           // 匹配
-          app.stack[index].fn(req, res, next)
+          run()
           return req.routed = true
         }
 
         // 通用中间件
-        app.stack[index].fn(req, res, next)
+        run()
+
+        function run(){
+          try{
+            app.stack[index].fn(req, res, next)
+          } catch(e){
+            console.log(e)
+            if (e) next(e)
+          }
+        }
 
       }
     }
@@ -602,6 +611,3 @@ function clean(arr, del) {
   });
   return result;
 }
-
-
-
