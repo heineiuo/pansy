@@ -25,9 +25,8 @@ module.exports.indexJS = {
 
   output: {
 
-    libraryTarget: "var",
     library: "pansy",
-
+    libraryTarget: 'umd',
     path: './.grunt/',
     //publicPath: "dist/",
     filename: "pansy.js",

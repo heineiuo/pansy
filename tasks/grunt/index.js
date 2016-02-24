@@ -22,7 +22,7 @@ module.exports = function(grunt){
 
   grunt.registerTask('release', [
     'webpack:indexJS',
-    'umd:indexJS',
+    //'umd:indexJS',
     'uglify:indexJS'
   ])
 

@@ -1,12 +1,11 @@
 {
   "name": "pansy",
   "author": "http://github.com/heineiuo",
-  "version": "0.7.15",
+  "version": "0.7.18",
   "description": "Middleware framework for the browser.",
   "devDependencies": {
     "grunt": "latest",
     "grunt-contrib-uglify": "latest",
-    "grunt-umd": "^2.3.5",
     "grunt-webpack": "latest",
     "lodash": "^4.2.0",
     "webpack": "latest",
