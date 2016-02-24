@@ -355,10 +355,11 @@ function createApp(conf) {
 
         redirect: function(rawUrl) {
           res.end()
+          console.info('重定向到: '+rawUrl)
           if (app.state.spa){
-            app.go(app.state.routeScope)
+            app.go(rawUrl, 'replace')
           } else {
-            location.href = app.state.routeScope + rawUrl
+            location.href = rawUrl
           }
         }
       }
