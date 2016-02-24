@@ -328,7 +328,7 @@ function createApp(conf) {
         expire: new Date().getTime() + app.state.timeout,
         conf: app.state,
         state: app.state,
-        historyStateType: 'push' // 堆栈方式,默认是push
+        historyStateType: type|| 'push' // 堆栈方式,默认是push
       })
 
       /**
