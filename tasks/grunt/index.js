@@ -2,8 +2,7 @@ var _ = require('lodash')
 
 var tasks = [
   'uglify',
-  'webpack',
-  'umd'
+  'webpack'
 ]
 
 var conf = {}
@@ -22,14 +21,12 @@ module.exports = function(grunt){
 
   grunt.registerTask('release', [
     'webpack:indexJS',
-    //'umd:indexJS',
     'uglify:indexJS'
   ])
 
 
   grunt.loadNpmTasks('grunt-webpack');
   grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-umd');
 
 
 }

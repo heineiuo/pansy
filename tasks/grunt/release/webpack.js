@@ -17,7 +17,7 @@ module.exports.indexJS = {
   cache: false,
 
   entry: {
-    index: "./src/index"
+    index: "./src/Pansy"
   },
 
   target: 'node',

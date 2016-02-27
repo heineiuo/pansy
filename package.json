@@ -3,6 +3,9 @@
   "author": "http://github.com/heineiuo",
   "version": "0.7.22",
   "description": "Middleware framework for the browser.",
+  "scripts": {
+    "build": "grunt release"
+  },
   "devDependencies": {
     "grunt": "latest",
     "grunt-contrib-uglify": "latest",
