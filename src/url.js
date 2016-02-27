@@ -1,5 +1,5 @@
 /**
- * URL解析
+ * parse url
  */
 
 function url(val){

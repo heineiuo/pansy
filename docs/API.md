@@ -1,14 +1,12 @@
-# Pansy API文档
+# Pansy API
 
 
 ## Quick Start
-
 
     <!doctype html>
     <head>
         <meta charset="utf-8">
         <title>PANSY</title>
-        <!-- 引用js文件 -->
         <script src="pansy.js"></script>
     </head>
     <body>
@@ -16,10 +14,10 @@
         <script>
     
             // init app
-            var app = pansy()
+            var app = pansy.Main()
     
             // start as a single-page application
-            app.config('spa', true) // default false
+            app.set('spa', true) // default false
     
             // use a middleware
             app.use(function(req, res, next){
@@ -34,7 +32,7 @@
             })
     
             // after document ready
-            app.go() // or app.go(location.href)
+            app.go(location.href)
     
         </script>
         
@@ -43,24 +41,24 @@
 
 ### Programmatic API
 
-* <code>[app.config(name, content)]()</code>
+* <code>[app.set(name, content)]()</code>
 * <code>[app.use(middleware)]()</code>
 * <code>[app.go(url, type)]()</code>
 
 #### pansy
 
-##### pansy([name])
+##### pansy.Main()
 
-    // 生成app
-    var app = pansy();
+    // create an app
+    var app = pansy.Main()
     
 
 ##### app.config(name, content)
 
-    // 自定义配置
-    // 开启单页面模式
-    app.config('spa', true);
-    // 自定义路由作用范围
+    // custom config
+    // set single page app mode
+    app.set('spa', true);
+    // custom router scope
     app.config('routeScope', '/scope');
 
 
@@ -87,17 +85,17 @@
 
 #### req对象
 
-    req.rawUrl // 请求的原始链接
-    req.query // URL中的query参数
-    req.params // URL中的pathname转化来的数组
+    req.rawUrl
+    req.query
+    req.params
 
 #### res对象
 
-    res.end // 结束请求
+    res.end
     
     
 #### next对象
 
-    next() // 不带参数,跳转到下一个控制器
-    next(err) // err参数堆栈,交给错误处理器处理,同时跳转到下一个控制器
+    next() // use next middleware
+    next(err) // some error happened :(
     

@@ -1,15 +1,22 @@
-#PANSY
+#Pansy
 
 ## Introduction
 
-PANSY help you create a SPA quickly and flexibility. It's not a framework nor a solution. It's lightly.
-But if you need to do something more with pansy, you can use middleware, which is supported and suggested.
-    
+Pansy provide a solution to write frontend app like [express.js](https://github.com/expressjs/express) at backend.
+
+* **URL Driven** A URL is like a state. Every state has been defined before app run.
+* **Middleware Framework** It's Flexible and Efficient.
+
+
+## Quick Start
 
 * [Quick Start](docs/API.md)
-* [Document](docs/API.md)
+
+## Documents
+
+* [API Document](docs/API.md)
 
 
 ## LICENSE
 
-MIT
+MIT LICENSE

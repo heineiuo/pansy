@@ -1,9 +1,9 @@
-
-/**map
+/**
  * forEach arr and callback(item, index)
  * @param arr
  * @param callback
  */
+
 function forEach(arr, callback){
   var len = arr.length
   if (typeof callback != "function"){

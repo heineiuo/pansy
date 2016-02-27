@@ -1,8 +1,5 @@
 /**
- * Create or return an App.
- *
- * @param arg
- * @returns {*}
+ * Entry file.
  */
 
 var url = require('./url')
@@ -430,8 +427,7 @@ function createApp(conf) {
  * 判断请求的url应该使用哪个app
  */
 function checkApp(url){
-
-
+  // todo
 }
 
 

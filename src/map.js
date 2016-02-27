@@ -4,6 +4,7 @@
  * @param callback
  * @returns {{}}
  */
+
 function map(obj, callback) {
   var result = {};
   for (var key in obj) {

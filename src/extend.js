@@ -1,10 +1,10 @@
-
-var forEach = require('./forEach')
-
 /**
  * Extend multi objects.
  * @returns {object}
  */
+
+var forEach = require('./forEach')
+
 function extend() {
   var result = {};
   var arg2arr = Array.prototype.slice.call(arguments,0);
