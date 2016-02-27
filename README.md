@@ -12,6 +12,15 @@ Pansy provide a solution to write frontend app like [express.js](https://github.
 
 * [Quick Start](docs/API.md)
 
+
+
+## Download
+
+```
+npm install pansy
+
+```
+
 ## Documents
 
 * [API Document](docs/API.md)
