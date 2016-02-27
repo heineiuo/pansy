@@ -14,11 +14,10 @@ Pansy provide a solution to write frontend app like [express.js](https://github.
 
 
 
-## Download
+## Installation
 
 ```
 npm install pansy
-
 ```
 
 ## Documents
