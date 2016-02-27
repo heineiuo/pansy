@@ -1,7 +1,7 @@
 {
   "name": "pansy",
   "author": "http://github.com/heineiuo",
-  "version": "0.7.20",
+  "version": "0.7.22",
   "description": "Middleware framework for the browser.",
   "devDependencies": {
     "grunt": "latest",

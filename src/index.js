@@ -6,8 +6,15 @@
  */
 
 var url = require('./url')
+var clean = require('./clean')
+var errHandleChecker = require('./errHandleChecker')
+var extend = require('./extend')
+var forEach = require('./forEach')
+var map = require('./map')
+var routeChecker = require('./routeChecker')
+var Router = require('./Router')
 
-var pansy = module.exports = {
+var pansy = {
   __hasInit: false,
   __mainAppInit: false,
   __hasPlugins: false,
@@ -21,39 +28,21 @@ var pansy = module.exports = {
     return this.__mainApp = createApp(conf)
   },
   createPlugin: function(conf){
-    pansy.__hasPlugins = true
+    this.__hasPlugins = true
     if (typeof this.__pluginApps[conf.pluginName] != 'undefined') {
       return this.__pluginApps[conf.pluginName]
     }
     conf.isPlugin = true
     this.__pluginApps[conf.pluginName] = createApp(conf)
     return this.__pluginApps[conf.pluginName]
-  },
-  createRouter: function(){
-    var __stack = []
-    return {
-      __stack: __stack,
-      use: function(fn){
-        __stack.push(fn)
-      },
-      route: function(path){
-        return {
-          get: function(){
-            var fns = Array.prototype.slice.call(arguments,0)
-            map(fns, function(item, index){
-              __stack.push([path, item])
-            })
-          }
-        }
-      }
-    }
   }
 }
 
+// alias
 pansy.Plugin = pansy.createPlugin
 pansy.Main = pansy.createMain
 pansy.Master = pansy.createMain
-pansy.Router = pansy.createRouter
+pansy.Router = pansy.Router = Router
 
 
 function init() {
@@ -328,6 +317,7 @@ function createApp(conf) {
         expire: new Date().getTime() + app.state.timeout,
         conf: app.state,
         state: app.state,
+        locals: {},
         historyStateType: type|| 'push' // 堆栈方式,默认是push
       })
 
@@ -445,101 +435,4 @@ function checkApp(url){
 }
 
 
-/**
- * 错误处理中间件判断
- * @param fn
- * @returns {boolean}
- */
-function errHandleChecker(fn){
-  try {
-    return fn.toString().match(/[A-Z0-9a-z,(\s]*\)/)[0].split(',').length == 4
-  } catch(e){
-    return false
-  }
-}
-
-/**
- * 路由器检查
- * @param req
- * @param path
- * @returns {boolean}
- */
-function routeChecker(req, path){
-  try {
-    return req.filterPath.match(path)[0] == req.filterPath
-  } catch(e){
-    return false
-  }
-}
-
-
-
-
-/**
- * map objects and callback(item, index)
- * @param obj
- * @param callback
- * @returns {{}}
- */
-function map(obj, callback) {
-  var result = {};
-  for (var key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      if (typeof callback === 'function') {
-        result[key] = callback.call(obj, obj[key], key, obj);
-      }
-    }
-  }
-  return result;
-}
-
-/**
- * forEach arr and callback(item, index)
- * @param arr
- * @param callback
- */
-function forEach(arr, callback){
-  var len = arr.length
-  if (typeof callback != "function"){
-    throw new TypeError()
-  }
-  for (var i = 0; i < len; i++) {
-    if (i in arr) {
-      callback.call(arguments[1], arr[i], i, arr)
-    }
-  }
-}
-
-
-/**
- * Extend multi objects.
- * @returns {object}
- */
-function extend() {
-  var result = {};
-  var arg2arr = Array.prototype.slice.call(arguments,0);
-  forEach(arg2arr, function(props, index){
-    for(var prop in props) {
-      if(props.hasOwnProperty(prop)) {
-        result[prop] = props[prop]
-      }
-    }
-  });
-  return result;
-}
-
-/**
- * Clean.
- * @param arr
- * @param del
- * @returns {Array}
- */
-function clean(arr, del) {
-  var result = [];
-  forEach(arr, function(value){
-    if (value !== del){
-      result.push(value)
-    }
-  });
-  return result;
-}
+module.exports = pansy

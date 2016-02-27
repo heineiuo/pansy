@@ -2,7 +2,7 @@
  * URL解析
  */
 
-var url = module.exports = function (val){
+function url(val){
 
   var a =  document.createElement('a');
   a.href = val;
@@ -71,3 +71,5 @@ var url = module.exports = function (val){
   }
 
 }
+
+module.exports = url
