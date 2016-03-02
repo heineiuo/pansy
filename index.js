@@ -1,1 +1,1 @@
-module.exports = require('./lib/pansy')
+module.exports = require('./dist/pansy')

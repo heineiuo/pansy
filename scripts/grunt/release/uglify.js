@@ -20,7 +20,7 @@ module.exports = {
     },
     files: [
       {
-        'lib/pansy.js': ['.grunt/pansy.js']
+        'dist/pansy.js': ['.grunt/pansy.js']
       }
     ]
   }
