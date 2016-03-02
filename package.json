@@ -4,15 +4,15 @@
   "version": "0.7.24",
   "main": "index.js",
   "repository": "git@github.com:heineiuo/pansy",
-  "description": "Middleware framework for the browser.",
+  "description": "Middleware framework for web-app.",
   "scripts": {
     "build": "grunt release"
   },
   "devDependencies": {
-    "grunt": "latest",
+    "grunt": "^0.4.5",
     "grunt-contrib-uglify": "latest",
     "grunt-webpack": "latest",
-    "lodash": "^4.2.0",
+    "lodash": "latest",
     "webpack": "latest",
     "webpack-dev-server": "latest"
   }
