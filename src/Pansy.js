@@ -34,8 +34,7 @@ var pansy = {
 
 // alias
 pansy.Plugin = pansy.createPlugin
-pansy.Main = pansy.createMain
-pansy.Master = pansy.createMain
+pansy.Main = pansy.Master = pansy.createMain
 pansy.Router = pansy.Router = Router
 
 
