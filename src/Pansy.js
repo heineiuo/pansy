@@ -60,6 +60,12 @@ function popstateHandle(event) {
     if (app.state.spa) {
       console.log('popstateHandle handling....')
       console.log(app.state.curUrl, location.href)
+
+      // todo
+      // plugin app's route do not change location.href
+      // so it will be not need to check hash here.
+      return app.go(location.href, 'replace')
+
       if (url(app.state.curUrl).beforeHash() != url(location.href).beforeHash()){
         console.log('popstateHandle get right, and run app.go(location.href)')
         app.go(location.href, 'replace')
