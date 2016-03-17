@@ -21,7 +21,7 @@ module.exports = function(grunt){
 
   grunt.initConfig(conf);
 
-  grunt.registerTask('release', [
+  grunt.registerTask('default', [
     'webpack:indexJS',
     'uglify:indexJS'
   ])
