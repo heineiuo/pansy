@@ -1,5 +1,9 @@
 #Pansy
 
+[![npm version](https://img.shields.io/npm/v/pansy.svg?style=flat-square)](https://www.npmjs.com/package/pansy)
+[![NPM Status](http://img.shields.io/npm/dm/pansy.svg?style=flat-square)](https://www.npmjs.org/package/pansy)
+
+
 ## Introduction
 
 Pansy provide a solution to write frontend app like [express.js](https://github.com/expressjs/express) at backend.
