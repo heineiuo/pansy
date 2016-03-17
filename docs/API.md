@@ -2,42 +2,42 @@
 
 
 ## Quick Start
+```html
+<!doctype html>
+<head>
+    <meta charset="utf-8">
+    <title>PANSY</title>
+    <script src="pansy.js"></script>
+</head>
+<body>
+    
+    <script>
 
-    <!doctype html>
-    <head>
-        <meta charset="utf-8">
-        <title>PANSY</title>
-        <script src="pansy.js"></script>
-    </head>
-    <body>
-        
-        <script>
+        // init app
+        var app = pansy.Main()
+
+        // start as a single-page application
+        app.set('spa', true) // default false
+
+        // use a middleware
+        app.use(function(req, res, next){
+            console.log(req.rawUrl)
+            next()
+        })
+
+        // use a route
+        app.route('/').get(function(req, res){
+            document.body.innerHTML = 'hello world'
+            res.end()
+        })
+
+        // after document ready
+        app.go(location.href)
+
+    </script>
     
-            // init app
-            var app = pansy.Main()
-    
-            // start as a single-page application
-            app.set('spa', true) // default false
-    
-            // use a middleware
-            app.use(function(req, res, next){
-                console.log(req.rawUrl)
-                next()
-            })
-    
-            // use a route
-            app.route('/').get(function(req, res){
-                document.body.innerHTML = 'hello world'
-                res.end()
-            })
-    
-            // after document ready
-            app.go(location.href)
-    
-        </script>
-        
-    </body>
-    
+</body>
+```
 
 ### Programmatic API
 
